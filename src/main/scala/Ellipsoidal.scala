@@ -7,12 +7,9 @@ object Ellipsoidal {
 
 
   object ellipsoidal {
-    def apply(i: Vector[Double]): Double = {
-      var k : Double = 0.0
-      return (i.map(x => {
-        k = k + 1; return (k * x * x).toDouble
-      }).sum)
-    }
+    def apply(i: Vector[Double]): Double =
+      //var k : Double = 0.0
+      i.map(x => x * x).sum
     def genome(size: Int) = Vector.fill(size)(C(-10,10))
   }
 

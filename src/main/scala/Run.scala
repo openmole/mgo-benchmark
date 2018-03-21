@@ -6,7 +6,7 @@ import freedsl.dsl._
 object Run extends App {
 
   object GaussianNoise {
-    def apply(rng: util.Random)(mu: Double = 0.0, sigma: Double = 1.0)= (sigma * rng.nextGaussian()) + mu
+    def apply(rng: util.Random)(mu: Double = 0.0, sigma: Double = 0.01)= (sigma * rng.nextGaussian()) + mu
   }
 
 
@@ -14,18 +14,31 @@ object Run extends App {
     val rng = new util.Random(seed)
 
     val nsga2 = NSGA2(
-      mu = 20,
+      mu = 100,
       lambda = 20,
-      fitness = x => Vector(Rastrigin.rastrigin(x) + GaussianNoise(rng)()),
-      continuous = Rastriigin.rastrigin.genome(2)
+      //fitness = x => Vector(Rastrigin.rastrigin(x) + GaussianNoise(rng)(mu = 0.0,sigma = 0.0)),
+      //continuous = Rastrigin.rastrigin.genome(2)
+      fitness = x => Vector(Rosenbrock.rosenbrock(x),Rastrigin.rastrigin(x)),
+      continuous = Rosenbrock.rosenbrock.genome(2)++Rastrigin.rastrigin.genome(2)
     )
+
+    /*
+    val noisyNsga2 = NoisyNSGA2(
+      mu=20,lambda=20,
+      fitness = (rng : scala.util.Random,x: Vector[Double]) => Vector(Rosenbrock.rosenbrock(x) + GaussianNoise(rng)(0.0,0.1)),
+      continuous = Rosenbrock.rosenbrock.genome(2),
+      aggregation = (p : Vector[Vector[Double]]) => p.map( i => i.sum / i.length)
+    )
+    */
 
     def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] =
       nsga2.
-        until(afterGeneration(1000)).
+        until(afterGeneration(10000)).
         trace { (s, is) =>
-          //println(s.generation)
-          //println(NSGA2.result(nsga2, is).mkString("\n"))
+          if(s.generation%1000==0) {
+            println(s.generation)
+            //println(NSGA2.result(nsga2, is).mkString("\n"))
+          }
         }.
         evolution
 
@@ -36,12 +49,18 @@ object Run extends App {
         evolution[DSL].eval
       }
 
-    NSGA2.result(nsga2, finalPopulation).head.fitness.head
+    //NSGA2.result(nsga2, finalPopulation).head.fitness.head
+    //NSGA2.result(nsga2, finalPopulation).head.continuous
+    //NSGA2.result(nsga2, finalPopulation)
+    NSGA2.result(nsga2, finalPopulation)
   }
 
-  val results = (0 until 100).map(replication)
-  println(results.mkString(" "))
-  //println(NSGA2.result(nsga2, finalPopulation).mkString("\n"))
 
+
+  //val results = (0 until 100).map(replication)
+  val deterministic = replication(0)
+  //println(results.mkString(" "))
+  //println(NSGA2.result(nsga2, finalPopulation).mkString("\n"))
+  println(deterministic)
 
 }
