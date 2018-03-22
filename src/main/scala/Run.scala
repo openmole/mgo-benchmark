@@ -10,7 +10,22 @@ object Run extends App {
   }
 
 
-  def replication(seed: Int) = {
+  // test coco integration
+  System.loadLibrary("CocoJNI")
+  //println(ClassLoader.getSystemClassLoader())
+  //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
+  val coco = new CocoJNI
+  coco.cocoSetLogLevel("info")
+  val suite: Suite = Suite(coco,"bbob-biobj", "","")
+  println("suite ok")
+  //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
+  val firstProblem = Suite.getNextProblem(coco,suite)
+  def firstFitness(x: Vector[Double]): Vector[Double] = Problem.evaluateFunction(coco,firstProblem,x)
+  //println(firstFitness(Vector.fill(firstProblem.dimension)(0.0)))
+  val boundaries = Problem.getBoundaries(firstProblem)
+
+
+  def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]) = {
     val rng = new util.Random(seed)
 
     val nsga2 = NSGA2(
@@ -18,8 +33,10 @@ object Run extends App {
       lambda = 20,
       //fitness = x => Vector(Rastrigin.rastrigin(x) + GaussianNoise(rng)(mu = 0.0,sigma = 0.0)),
       //continuous = Rastrigin.rastrigin.genome(2)
-      fitness = x => Vector(Rosenbrock.rosenbrock(x),Rastrigin.rastrigin(x)),
-      continuous = Rosenbrock.rosenbrock.genome(2)++Rastrigin.rastrigin.genome(2)
+      //fitness = x => Vector(Rosenbrock.rosenbrock(x),Rastrigin.rastrigin(x)),
+      //continuous = Rosenbrock.rosenbrock.genome(2)++Rastrigin.rastrigin.genome(2)
+      fitness = fitness,
+      continuous = boundaries
     )
 
     /*
@@ -58,9 +75,11 @@ object Run extends App {
 
 
   //val results = (0 until 100).map(replication)
-  val deterministic = replication(0)
-  //println(results.mkString(" "))
-  //println(NSGA2.result(nsga2, finalPopulation).mkString("\n"))
-  println(deterministic)
+  val deterministic = replication(0)(firstFitness,boundaries)
+  println(deterministic.mkString("\n"))
+  //println(deterministic)
+
+
+
 
 }

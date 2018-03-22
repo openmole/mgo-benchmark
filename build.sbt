@@ -13,3 +13,7 @@ resolvers += Resolver.sonatypeRepo("staging")
 resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies += "fr.iscpif" %% "mgo" % "3.8-SNAPSHOT"
+
+javaOptions += "-Djava.library.path=/home/raimbault/ComplexSystems/MGO/mgo-benchmark"
+
+fork := true

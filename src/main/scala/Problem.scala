@@ -1,6 +1,8 @@
 
 
-import scala.collection.immutable.Vector
+//import scala.collection.immutable.Vector
+
+import mgo._
 
 /**
   * The problem contains some basic properties of the coco_problem_t structure that can be accessed
@@ -27,15 +29,16 @@ object Problem {
     * @param pointer pointer to the coco_problem_t object
     * @throws Exception
     */
-  def apply(pointer: Long) = new Problem(
+  def apply(coco: CocoJNI,pointer: Long) = new Problem(
     pointer,
-    CocoJNI.cocoProblemGetDimension(pointer),
-    CocoJNI.cocoProblemGetNumberOfObjectives(pointer),
-    CocoJNI.cocoProblemGetNumberOfConstraints(pointer),
-    CocoJNI.cocoProblemGetSmallestValuesOfInterest(pointer),
-    CocoJNI.cocoProblemGetLargestValuesOfInterest(pointer),
-    CocoJNI.cocoProblemGetId(pointer),
-    CocoJNI.cocoProblemGetName(pointer),CocoJNI.cocoProblemGetIndex(pointer)
+    coco.cocoProblemGetDimension(pointer),
+    coco.cocoProblemGetNumberOfObjectives(pointer),
+    coco.cocoProblemGetNumberOfConstraints(pointer),
+    coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
+    coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
+    coco.cocoProblemGetId(pointer),
+    coco.cocoProblemGetName(pointer),
+    coco.cocoProblemGetIndex(pointer)
   )
 
 
@@ -45,8 +48,10 @@ object Problem {
     * @param x
     * @return the result of the function evaluation in point x
     */
-  def evaluateFunction(problem: Problem,x : Vector[Double]) : Vector[Double] = {
-    CocoJNI.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+  def evaluateFunction(coco: CocoJNI, problem: Problem,x : Vector[Double]) : Vector[Double] = {
+    //println(x.toArray.toString)
+    //println(coco.cocoEvaluateFunction(problem.pointer, x.toArray).toString)
+    coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
   }
 
   /**
@@ -54,16 +59,27 @@ object Problem {
     * @param x
     * @return the result of the constraint evaluation in point x
     */
-  def evaluateConstraint(problem: Problem,x: Vector[Double]): Vector[Double] = {
-    CocoJNI.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
+  def evaluateConstraint(coco: CocoJNI,problem: Problem,x: Vector[Double]): Vector[Double] = {
+    coco.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
   }
 
+  def getBoundaries(problem: Problem): Vector[C] = {
+    val minvals = problem.lower_bounds
+    val maxvals = problem.upper_bounds
+    for {
+      minval <- minvals
+      maxval <- maxvals
+    } yield C(minval,maxval)
+  }
+
+
+  /*
   def getLargestFValuesOfInterest(problem: Problem): Vector[Double] = {
     CocoJNI.cocoProblemGetLargestFValuesOfInterest(problem.pointer).to[Vector]
   }
 
   def getEvaluations(problem: Problem): Long = {
-    CocoJNI.cocoProblemGetEvaluations(pointer)
+    CocoJNI.cocoProblemGetEvaluations(problem.pointer)
   }
 
   def getEvaluationsConstraints(problem: Problem): Long = {
@@ -73,5 +89,7 @@ object Problem {
   def isFinalTargetHit(problem: Problem): Boolean = {
     CocoJNI.cocoProblemIsFinalTargetHit(problem.pointer) == 1
   }
+  */
 
 }
+
