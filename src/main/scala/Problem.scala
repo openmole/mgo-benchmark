@@ -21,26 +21,34 @@ case class Problem (
                    )
 
 
+
+
 object Problem {
 
+
+  val emptyProblem : Problem = Problem(0,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
 
   /**
     * Constructs the problem from the pointer.
     * @param pointer pointer to the coco_problem_t object
     * @throws Exception
     */
-  def apply(coco: CocoJNI,pointer: Long) = new Problem(
-    pointer,
-    coco.cocoProblemGetDimension(pointer),
-    coco.cocoProblemGetNumberOfObjectives(pointer),
-    coco.cocoProblemGetNumberOfConstraints(pointer),
-    coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
-    coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
-    coco.cocoProblemGetId(pointer),
-    coco.cocoProblemGetName(pointer),
-    coco.cocoProblemGetIndex(pointer)
-  )
-
+  def apply(coco: CocoJNI,pointer: Long) : Problem = {
+    if(pointer == 0) return emptyProblem
+    else {
+      return new Problem(
+        pointer,
+        coco.cocoProblemGetDimension(pointer),
+        coco.cocoProblemGetNumberOfObjectives(pointer),
+        coco.cocoProblemGetNumberOfConstraints(pointer),
+        coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
+        coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
+        coco.cocoProblemGetId(pointer),
+        coco.cocoProblemGetName(pointer),
+        coco.cocoProblemGetIndex(pointer)
+      )
+    }
+  }
 
 
   /**

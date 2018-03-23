@@ -3,26 +3,13 @@ import mgo._
 import mgo.contexts._
 import freedsl.dsl._
 
-object Run extends App {
+
+
+object replication {
 
   object GaussianNoise {
     def apply(rng: util.Random)(mu: Double = 0.0, sigma: Double = 0.01)= (sigma * rng.nextGaussian()) + mu
   }
-
-
-  // test coco integration
-  System.loadLibrary("CocoJNI")
-  //println(ClassLoader.getSystemClassLoader())
-  //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
-  val coco = new CocoJNI
-  coco.cocoSetLogLevel("info")
-  val suite: Suite = Suite(coco,"bbob-biobj", "","")
-  println("suite ok")
-  //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
-  val firstProblem = Suite.getNextProblem(coco,suite)
-  def firstFitness(x: Vector[Double]): Vector[Double] = Problem.evaluateFunction(coco,firstProblem,x)
-  //println(firstFitness(Vector.fill(firstProblem.dimension)(0.0)))
-  val boundaries = Problem.getBoundaries(firstProblem)
 
 
   def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]) = {
@@ -73,13 +60,52 @@ object Run extends App {
   }
 
 
+}
 
-  //val results = (0 until 100).map(replication)
-  val deterministic = replication(0)(firstFitness,boundaries)
-  println(deterministic.mkString("\n"))
+
+
+
+
+object Run extends App {
+
+
+  // test coco integration
+  //System.loadLibrary("CocoJNI")
+  //println(ClassLoader.getSystemClassLoader())
+  //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
+  //val coco = new CocoJNI
+  //coco.cocoSetLogLevel("info")
+  //val suite: Suite = new Suite(coco,"bbob-biobj", "","")
+  //println("suite ok")
+  //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
+  //var problem = Suite.getNextProblem(coco,suite)
+  /*while (problem != Problem.emptyProblem){
+    println(problem.name)
+    problem = Suite.getNextProblem(coco,suite)
+  }*/
+
+  /*
+  println(
+  for {
+    problem <- suite
+  } yield problem
+  )
+  */
+
+  //def firstFitness(x: Vector[Double]): Vector[Double] = Problem.evaluateFunction(coco,firstProblem,x)
+  //println(firstFitness(Vector.fill(firstProblem.dimension)(0.0)))
+  //val boundaries = Problem.getBoundaries(firstProblem)
+
+
+
+
+  //val results = (0 until 100).map(replication.replication)
+  //val deterministic = replication.replication(0)(firstFitness,boundaries)
+  //println(deterministic.mkString("\n"))
   //println(deterministic)
 
 
+  RandomSearch.optimize(Rastrigin.rastrigin)
 
 
 }
