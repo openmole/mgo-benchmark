@@ -17,7 +17,6 @@ import scala.language.higherKinds
 
 
 
-
 object NSGA2 {
 
   import CDGenome._
@@ -47,7 +46,7 @@ object NSGA2 {
 
   case class Result(continuous: Vector[Double], discrete: Vector[Int], fitness: Vector[Double])
 
-  def result(population: Vector[Individual], continuous: Vector[C]) =
+  def result(population: Vector[Individual], continuous: Vector[C]): Vector[Result] =
     keepFirstFront(population, vectorFitness.get).map { i =>
       Result(scaleContinuousValues(continuousValues.get(i.genome), continuous), Individual.genome composeLens discreteValues get i, i.fitness.toVector)
     }

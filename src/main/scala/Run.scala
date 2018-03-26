@@ -100,12 +100,15 @@ object Run extends App {
 
 
   //val results = (0 until 100).map(replication.replication)
-  //val deterministic = replication.replication(0)(firstFitness,boundaries)
+  val deterministic = replication.replication(0)(Rosenbrock.rosenbrock.apply,Rosenbrock.rosenbrock.genome(2))
   //println(deterministic.mkString("\n"))
-  //println(deterministic)
+  println(deterministic)
 
+  println(Rosenbrock.counter)
 
-  RandomSearch.optimize(Rastrigin.rastrigin)
+  //println(RandomSearch.optimize(Rastrigin.rastrigin.apply)(Rastrigin.rastrigin.genome(2))(1000)(new util.Random(0)))
+  println(RandomSearch.optimize(Rosenbrock.rosenbrock.apply)(Rosenbrock.rosenbrock.genome(2))(200000)(new util.Random(0)))
+  println(Rosenbrock.counter)
 
 
 }
