@@ -1,4 +1,5 @@
 
+package benchmark
 
 class CocoJNI {
   //System.loadLibrary("CocoJNI")

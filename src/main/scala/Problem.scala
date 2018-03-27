@@ -1,14 +1,34 @@
 
-
-//import scala.collection.immutable.Vector
+package benchmark
 
 import mgo._
 
-/**
-  * The problem contains some basic properties of the coco_problem_t structure that can be accessed
-  * through its getter functions.
-  */
-case class Problem (
+
+trait Problem {
+
+  def dimension: Int
+  def number_of_objectives: Int
+  def number_of_constraints: Int
+  def lower_bounds: Vector[Double]
+  def upper_bounds: Vector[Double]
+
+
+  /**
+    * Optimization boundaries
+    * @param problem
+    * @return
+    */
+  def getBoundaries(problem: Problem): Vector[C] = {
+    val bounds = problem.lower_bounds zip problem.upper_bounds
+    bounds.map{b => C(b._1,b._2)}
+  }
+
+  def evaluateFunction(x : Vector[Double]) : Vector[Double]
+
+}
+
+
+case class CocoProblem (
   pointer: Long, // Pointer to the coco_problem_t object
   dimension: Int,
   number_of_objectives: Int,
@@ -18,15 +38,15 @@ case class Problem (
   id: String,
   name: String,
   index: Long
-                   )
+) extends Problem
 
 
 
 
-object Problem {
+object CocoProblem {
 
 
-  val emptyProblem : Problem = Problem(0,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
+  val emptyProblem : Problem = CocoProblem(0,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
 
   /**
     * Constructs the problem from the pointer.
@@ -36,7 +56,7 @@ object Problem {
   def apply(coco: CocoJNI,pointer: Long) : Problem = {
     if(pointer == 0) return emptyProblem
     else {
-      return new Problem(
+      return new CocoProblem(
         pointer,
         coco.cocoProblemGetDimension(pointer),
         coco.cocoProblemGetNumberOfObjectives(pointer),
@@ -51,45 +71,58 @@ object Problem {
   }
 
 
+
   /**
     * Evaluates the function in point x and returns the result as an array of doubles.
     * @param x
     * @return the result of the function evaluation in point x
     */
-  def evaluateFunction(coco: CocoJNI, problem: Problem,x : Vector[Double]) : Vector[Double] = {
+  def evaluateFunction(problem: CocoProblem)(x : Vector[Double]) : Vector[Double] = {
     //println(x.toArray.toString)
     //println(coco.cocoEvaluateFunction(problem.pointer, x.toArray).toString)
-    coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+    Suite.coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
   }
 
+  //override def evaluateFunction()
+
+
   /**
-    * Evaluates the constraint in point x and returns the result as an array of doubles.
+    * Evaluates the constraint in point x and returns the result as a vector of doubles.
     * @param x
     * @return the result of the constraint evaluation in point x
     */
-  def evaluateConstraint(coco: CocoJNI,problem: Problem,x: Vector[Double]): Vector[Double] = {
-    coco.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
+  def evaluateConstraint(problem: CocoProblem,x: Vector[Double]): Vector[Double] = {
+    Suite.coco.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
   }
 
-  def getBoundaries(problem: Problem): Vector[C] = {
-    val minvals = problem.lower_bounds
-    val maxvals = problem.upper_bounds
-    for {
-      minval <- minvals
-      maxval <- maxvals
-    } yield C(minval,maxval)
-  }
 
 
   /*
+  def getGenome(problem: Problem): Genome = {
+    getBoundaries(problem)
+  }
+  */
+
+
+  /*
+  // returns null pointers
   def getLargestFValuesOfInterest(problem: Problem): Vector[Double] = {
-    CocoJNI.cocoProblemGetLargestFValuesOfInterest(problem.pointer).to[Vector]
+    val largestFvals = Suite.coco.cocoProblemGetLargestFValuesOfInterest(problem.pointer)
+    println(largestFvals)
+    largestFvals.to[Vector]
+  }
+  */
+
+  /**
+    * Number of evals
+    * @param problem
+    * @return
+    */
+  def getEvaluations(problem: CocoProblem): Long = {
+    Suite.coco.cocoProblemGetEvaluations(problem.pointer)
   }
 
-  def getEvaluations(problem: Problem): Long = {
-    CocoJNI.cocoProblemGetEvaluations(problem.pointer)
-  }
-
+  /*
   def getEvaluationsConstraints(problem: Problem): Long = {
     CocoJNI.cocoProblemGetEvaluationsConstraints(problem.pointer)
   }
@@ -98,6 +131,7 @@ object Problem {
     CocoJNI.cocoProblemIsFinalTargetHit(problem.pointer) == 1
   }
   */
+
 
 }
 

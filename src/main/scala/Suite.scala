@@ -1,11 +1,6 @@
+package benchmark
 
-/*case class Suite(
-                pointer: Long,
-                name: String
-                )
-*/
-
-class Suite(p:Long,name:String,coco:CocoJNI) extends Iterable[Problem] {
+case class Suite(p:Long,name:String,coco:CocoJNI) {
 
   def pointer : Long = p
 
@@ -23,7 +18,7 @@ class Suite(p:Long,name:String,coco:CocoJNI) extends Iterable[Problem] {
 
 
 
-  override def iterator: Iterator[Problem] = new SuiteIterator(this.coco,this)
+  //override def iterator: Iterator[Problem] = new SuiteIterator(this.coco,this)
 
 
 }
@@ -31,18 +26,60 @@ class Suite(p:Long,name:String,coco:CocoJNI) extends Iterable[Problem] {
 
 object Suite {
 
+  //construct a unique coco object
+  val coco: CocoJNI = {
+    System.loadLibrary("CocoJNI")
+    //println(ClassLoader.getSystemClassLoader())
+    //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
+    val coco = new CocoJNI
+    coco.cocoSetLogLevel("info")
+    coco
+  }
+
+  /**
+  *  Get a suite from its name : "bbob", "bbob-biobj"
+   */
+  def getSuite(name: String): Suite = {
+    // parameters example :
+    //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
+    new Suite(coco,name, "","")
+  }
+
 
   /**
     *  Get next problem
     */
-
-  def getNextProblem(coco: CocoJNI,suite: Suite): Problem = {
+  def getNextProblem(suite: Suite): CocoProblem = {
     // get observer pointer
     val observer = coco.cocoGetObserver("no_observer","")
-    Problem(coco,coco.cocoSuiteGetNextProblem(suite.pointer,observer))
+    CocoProblem(coco,coco.cocoSuiteGetNextProblem(suite.pointer,observer))
   }
 
 
+  /**
+    * testing
+    */
+  def testSuiteOptim(name: String) = {
+    val suite = Suite.getSuite(name)
+
+    var problem = Suite.getNextProblem(suite)
+    while (problem != CocoProblem.emptyProblem){
+      println("\nProblem : "+problem.name)
+      println("Boundaries : "+problem.getBoundaries(problem))
+      println(CocoProblem.evaluateFunction(problem)(Vector.fill(problem.dimension)(0.0)))
+      println("Best solution : "+RandomSearch.optimize(problem)(10000))
+      //println("Fvalinterest : "+Problem.getLargestFValuesOfInterest(problem))
+      problem = Suite.getNextProblem(suite)
+    }
+  }
+
+  //def firstFitness(x: Vector[Double]): Vector[Double] = Problem.evaluateFunction(coco,firstProblem,x)
+  //println(firstFitness(Vector.fill(firstProblem.dimension)(0.0)))
+  //val boundaries = Problem.getBoundaries(firstProblem)
+
+
+
+  /*
   /**
     * Finalizes the suite.
     * @throws Exception
@@ -50,10 +87,13 @@ object Suite {
   def finalizeSuite(coco: CocoJNI, suite: Suite): Unit = {
     coco.cocoFinalizeSuite(suite.pointer)
   }
+  */
 
 }
 
 
+// not needed for now
+/*
 class SuiteIterator(coco : CocoJNI,suite : Suite) extends Iterator[Problem] {
 
 
@@ -67,5 +107,5 @@ class SuiteIterator(coco : CocoJNI,suite : Suite) extends Iterator[Problem] {
   override def next(): Problem = Suite.getNextProblem(coco,suite)
 
 }
-
+*/
 
