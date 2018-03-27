@@ -23,7 +23,12 @@ trait Problem {
     bounds.map{b => C(b._1,b._2)}
   }
 
-  def evaluateFunction(x : Vector[Double]) : Vector[Double]
+  /**
+    * no evaluation
+    * @param x
+    * @return
+    */
+  def evaluateFunction(x : Vector[Double]) : Vector[Double] = x
 
 }
 

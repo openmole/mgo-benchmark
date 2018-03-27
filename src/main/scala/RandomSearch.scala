@@ -37,7 +37,7 @@ object RandomSearch {
     * @return
     */
   def optimize(problem: Problem)(nsearchs: Int): Vector[(Vector[Double],Vector[Double])]  = {
-    optimize(problem.evaluateFunction(_))(Problem.getBoundaries(problem))(nsearchs)(new util.Random)
+    optimize(problem.evaluateFunction(_))(problem.getBoundaries(problem))(nsearchs)(new util.Random)
   }
 
 
