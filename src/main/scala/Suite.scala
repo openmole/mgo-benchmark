@@ -1,27 +1,14 @@
 package benchmark
 
-case class Suite(p:Long,name:String,coco:CocoJNI) {
-
-  def pointer : Long = p
-
-  /*
-  def apply(coco: CocoJNI, suiteName: String, suiteInstance: String, suiteOptions: String) = {
-    println("creating suite " + suiteName)
-    // set empty observer
-    coco.cocoGetObserver("no_observer", "")
-    new Suite(coco.cocoGetSuite(suiteName, suiteInstance, suiteOptions), suiteName)
-  }
-  */
-  def this(coco: CocoJNI, suiteName: String, suiteInstance: String, suiteOptions: String) =
-    this(coco.cocoGetSuite(suiteName, suiteInstance, suiteOptions), suiteName,coco)
-
+case class Suite(
+                  pointer:Long,
+                  name:String
+                )
 
 
 
   //override def iterator: Iterator[Problem] = new SuiteIterator(this.coco,this)
 
-
-}
 
 
 object Suite {
@@ -36,13 +23,23 @@ object Suite {
     coco
   }*/
 
+  def apply(coco: CocoJNI, suiteName: String, suiteInstance: String, suiteOptions: String) = {
+    println("creating suite " + suiteName)
+    // set empty observer
+    coco.cocoGetObserver("no_observer", "")
+    new Suite(coco.cocoGetSuite(suiteName, suiteInstance, suiteOptions), suiteName)
+  }
+
+
+
+
   /**
   *  Get a suite from its name : "bbob", "bbob-biobj"
    */
   def getSuite(coco: CocoJNI,name: String): Suite = {
     // parameters example :
     //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
-    new Suite(coco,name, "","")
+    Suite.apply(coco,name, "","")
   }
 
 
