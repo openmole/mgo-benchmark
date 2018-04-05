@@ -51,14 +51,14 @@ case class CocoProblem (
 object CocoProblem {
 
 
-  val emptyProblem : Problem = CocoProblem(0,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
+  val emptyProblem : CocoProblem = CocoProblem(0,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
 
   /**
     * Constructs the problem from the pointer.
     * @param pointer pointer to the coco_problem_t object
     * @throws Exception
     */
-  def apply(coco: CocoJNI,pointer: Long) : Problem = {
+  def apply(coco: CocoJNI,pointer: Long) : CocoProblem = {
     if(pointer == 0) return emptyProblem
     else {
       return new CocoProblem(
@@ -82,10 +82,10 @@ object CocoProblem {
     * @param x
     * @return the result of the function evaluation in point x
     */
-  def evaluateFunction(problem: CocoProblem)(x : Vector[Double]) : Vector[Double] = {
+  def evaluateFunction(coco:CocoJNI,problem: CocoProblem)(x : Vector[Double]) : Vector[Double] = {
     //println(x.toArray.toString)
     //println(coco.cocoEvaluateFunction(problem.pointer, x.toArray).toString)
-    Suite.coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+    coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
   }
 
   //override def evaluateFunction()
@@ -96,8 +96,8 @@ object CocoProblem {
     * @param x
     * @return the result of the constraint evaluation in point x
     */
-  def evaluateConstraint(problem: CocoProblem,x: Vector[Double]): Vector[Double] = {
-    Suite.coco.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
+  def evaluateConstraint(coco:CocoJNI,problem: CocoProblem,x: Vector[Double]): Vector[Double] = {
+    coco.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
   }
 
 
@@ -123,8 +123,8 @@ object CocoProblem {
     * @param problem
     * @return
     */
-  def getEvaluations(problem: CocoProblem): Long = {
-    Suite.coco.cocoProblemGetEvaluations(problem.pointer)
+  def getEvaluations(coco:CocoJNI,problem: CocoProblem): Long = {
+    coco.cocoProblemGetEvaluations(problem.pointer)
   }
 
   /*

@@ -91,16 +91,20 @@ object Langermann {
 
   object langermann {
 
-    def apply(x : Vector[Double]): Double = {
-      Vector(3, 5, 2, 1, 7) zip Vector(5, 2, 1, 4, 9) map {
-        c => - c._2 * cos(Pi * (pow(x(0) - c._1, 2) + pow(x(1) - c._1, 2))) / exp((pow(x(0) - c._1, 2) + pow(x(1) - c._1, 2)) / Pi)
-      }.sum
-    }
+    def apply(x : Vector[Double]) : Double = (Vector(3.0, 5.0, 2.0, 1.0, 7.0) zip Vector(5.0, 2.0, 1.0, 4.0, 9.0)).map {
+      case (a,c) => - c * cos(Pi * (pow(x(0) - a, 2) + pow(x(1) - a, 2))) / exp((pow(x(0) - a, 2) + pow(x(1) - a, 2)) / Pi)
+    }.sum
 
     def genome()=Vector.fill(2)(C(0,10))
   }
 
 }
+
+
+
+
+
+
 
 
 

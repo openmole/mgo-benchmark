@@ -27,19 +27,19 @@ case class Suite(p:Long,name:String,coco:CocoJNI) {
 object Suite {
 
   //construct a unique coco object
-  val coco: CocoJNI = {
+  /*val coco: CocoJNI = {
     System.loadLibrary("CocoJNI")
     //println(ClassLoader.getSystemClassLoader())
     //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
     val coco = new CocoJNI
     coco.cocoSetLogLevel("info")
     coco
-  }
+  }*/
 
   /**
   *  Get a suite from its name : "bbob", "bbob-biobj"
    */
-  def getSuite(name: String): Suite = {
+  def getSuite(coco: CocoJNI,name: String): Suite = {
     // parameters example :
     //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
     new Suite(coco,name, "","")
@@ -49,7 +49,7 @@ object Suite {
   /**
     *  Get next problem
     */
-  def getNextProblem(suite: Suite): CocoProblem = {
+  def getNextProblem(coco: CocoJNI,suite: Suite): CocoProblem = {
     // get observer pointer
     val observer = coco.cocoGetObserver("no_observer","")
     CocoProblem(coco,coco.cocoSuiteGetNextProblem(suite.pointer,observer))
@@ -59,17 +59,17 @@ object Suite {
   /**
     * testing
     */
-  def testSuiteOptim(name: String) = {
-    val suite = Suite.getSuite(name)
+  def testSuiteOptim(coco:CocoJNI,name: String) = {
+    val suite = Suite.getSuite(coco,name)
 
-    var problem = Suite.getNextProblem(suite)
+    var problem = Suite.getNextProblem(coco,suite)
     while (problem != CocoProblem.emptyProblem){
       println("\nProblem : "+problem.name)
       println("Boundaries : "+problem.getBoundaries(problem))
-      println(CocoProblem.evaluateFunction(problem)(Vector.fill(problem.dimension)(0.0)))
+      println(CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
       println("Best solution : "+RandomSearch.optimize(problem)(10000))
       //println("Fvalinterest : "+Problem.getLargestFValuesOfInterest(problem))
-      problem = Suite.getNextProblem(suite)
+      problem = Suite.getNextProblem(coco,suite)
     }
   }
 
