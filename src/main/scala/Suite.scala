@@ -1,4 +1,4 @@
-package benchmark
+
 
 case class Suite(
                   pointer:Long,
@@ -7,26 +7,22 @@ case class Suite(
 
 
 
-  //override def iterator: Iterator[Problem] = new SuiteIterator(this.coco,this)
-
-
-
 object Suite {
 
   //construct a unique coco object
-  /*val coco: CocoJNI = {
-    System.loadLibrary("CocoJNI")
+  lazy val coco: CocoJNI = {
+    //System.loadLibrary("CocoJNI")
     //println(ClassLoader.getSystemClassLoader())
     //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
     val coco = new CocoJNI
     coco.cocoSetLogLevel("info")
     coco
-  }*/
+  }
 
   def apply(coco: CocoJNI, suiteName: String, suiteInstance: String, suiteOptions: String) = {
     println("creating suite " + suiteName)
     // set empty observer
-    coco.cocoGetObserver("no_observer", "")
+    //coco.cocoGetObserver("no_observer", "")
     new Suite(coco.cocoGetSuite(suiteName, suiteInstance, suiteOptions), suiteName)
   }
 
@@ -36,7 +32,7 @@ object Suite {
   /**
   *  Get a suite from its name : "bbob", "bbob-biobj"
    */
-  def getSuite(coco: CocoJNI,name: String): Suite = {
+  def getSuite(name: String): Suite = {
     // parameters example :
     //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
     Suite.apply(coco,name, "","")
@@ -46,7 +42,7 @@ object Suite {
   /**
     *  Get next problem
     */
-  def getNextProblem(coco: CocoJNI,suite: Suite): CocoProblem = {
+  def getNextProblem(suite: Suite): CocoProblem = {
     // get observer pointer
     val observer = coco.cocoGetObserver("no_observer","")
     CocoProblem(coco,coco.cocoSuiteGetNextProblem(suite.pointer,observer))
@@ -56,17 +52,17 @@ object Suite {
   /**
     * testing
     */
-  def testSuiteOptim(coco:CocoJNI,name: String) = {
-    val suite = Suite.getSuite(coco,name)
+  def testSuiteOptim(name: String) = {
+    val suite = Suite(coco,name,"","")
 
-    var problem = Suite.getNextProblem(coco,suite)
+    var problem = Suite.getNextProblem(suite)
     while (problem != CocoProblem.emptyProblem){
       println("\nProblem : "+problem.name)
       println("Boundaries : "+problem.getBoundaries(problem))
       println(CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
       println("Best solution : "+RandomSearch.optimize(problem)(10000))
       //println("Fvalinterest : "+Problem.getLargestFValuesOfInterest(problem))
-      problem = Suite.getNextProblem(coco,suite)
+      problem = Suite.getNextProblem(suite)
     }
   }
 

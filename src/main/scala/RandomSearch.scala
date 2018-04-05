@@ -1,4 +1,3 @@
-package benchmark
 
 import mgo._
 
@@ -26,7 +25,7 @@ object RandomSearch {
     */
   def optimize(fitness : Vector[Double] => Vector[Double])(genome : Vector[C])(nsearchs: Int)(rng : Random) : Vector[(Vector[Double],Vector[Double])] = {
     val points = Vector.fill(nsearchs)(genome.map {c => (c.high - c.low)*rng.nextDouble() +  c.low})
-    val front = paretoFront(points,fitness)
+    val front = benchmark.paretoFront(points,fitness)
     front.map{i => (i.genome.continuousValues.to[Vector],i.fitness.to[Vector])}
   }
 

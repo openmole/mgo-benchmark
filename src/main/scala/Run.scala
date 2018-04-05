@@ -1,21 +1,16 @@
 
-import benchmark._
 
 object Run extends App {
 
-  System.loadLibrary("CocoJNI")
-  val coco = new CocoJNI
-  coco.cocoSetLogLevel("info")
-
-  /*val suite: Suite = Suite.getSuite(coco,"bbob-biobj")
+  val suite: Suite = Suite.getSuite("bbob-biobj")
   println("suite ok")
   //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
-  var problem = Suite.getNextProblem(coco,suite)
+  var problem = Suite.getNextProblem(suite)
   while (problem != CocoProblem.emptyProblem){
     println(problem.name)
-    problem = Suite.getNextProblem(coco,suite)
+    problem = Suite.getNextProblem(suite)
   }
-  */
+
 
 
   // test coco integration

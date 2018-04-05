@@ -3,7 +3,7 @@ import mgo.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
 import mgo.algorithm.keepFirstFront
 
 
-package object benchmark {
+object benchmark {
 
 
   /**

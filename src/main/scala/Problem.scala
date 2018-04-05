@@ -1,6 +1,4 @@
 
-package benchmark
-
 import mgo._
 
 
