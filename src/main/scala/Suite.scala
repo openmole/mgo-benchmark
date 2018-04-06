@@ -19,6 +19,11 @@ object Suite {
     coco
   }
 
+  lazy val observer: Long = {
+    val observerOptions = "result_folder: res"
+    coco.cocoGetObserver("obs",observerOptions)
+  }
+
   def apply(coco: CocoJNI, suiteName: String, suiteInstance: String, suiteOptions: String) = {
     println("creating suite " + suiteName)
     // set empty observer
@@ -44,26 +49,47 @@ object Suite {
     */
   def getNextProblem(suite: Suite): CocoProblem = {
     // get observer pointer
-    val observer = coco.cocoGetObserver("no_observer","")
+    //val observer = coco.cocoGetObserver("no_observer","")
     CocoProblem(coco,coco.cocoSuiteGetNextProblem(suite.pointer,observer))
   }
+
+
+
+  def problemNames(name: String) = {
+
+    val suite: Suite = Suite.getSuite("bbob-biobj")
+    println("suite ok")
+    //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
+    var problem = Suite.getNextProblem(suite)
+    while (problem != CocoProblem.emptyProblem){
+      println(problem.name)
+      problem = Suite.getNextProblem(suite)
+    }
+
+  }
+
 
 
   /**
     * testing
     */
   def testSuiteOptim(name: String) = {
-    val suite = Suite(coco,name,"","")
+    //val suite = Suite(coco,name,"","")
+    val suite = getSuite(name)
 
     var problem = Suite.getNextProblem(suite)
-    while (problem != CocoProblem.emptyProblem){
+    //while (problem != CocoProblem.emptyProblem){
+    for {_ <- 1 to 20} {
       println("\nProblem : "+problem.name)
       println("Boundaries : "+problem.getBoundaries(problem))
-      println(CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
+      //println(CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
       println("Best solution : "+RandomSearch.optimize(problem)(10000))
       //println("Fvalinterest : "+Problem.getLargestFValuesOfInterest(problem))
-      problem = Suite.getNextProblem(suite)
+      problem = getNextProblem(suite)
     }
+
+    finalizeSuite(suite)
+
   }
 
   //def firstFitness(x: Vector[Double]): Vector[Double] = Problem.evaluateFunction(coco,firstProblem,x)
@@ -72,15 +98,15 @@ object Suite {
 
 
 
-  /*
+
   /**
-    * Finalizes the suite.
-    * @throws Exception
+    * Finalizes the suite
     */
-  def finalizeSuite(coco: CocoJNI, suite: Suite): Unit = {
+  def finalizeSuite(suite: Suite): Unit = {
+    coco.cocoFinalizeObserver(observer)
     coco.cocoFinalizeSuite(suite.pointer)
   }
-  */
+
 
 }
 

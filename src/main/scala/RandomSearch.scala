@@ -6,6 +6,7 @@ import algorithm._
 import mgo.algorithm.CDGenome.DeterministicIndividual.{Individual, vectorFitness}
 import mgo.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
 
+
 object RandomSearch {
 
 
