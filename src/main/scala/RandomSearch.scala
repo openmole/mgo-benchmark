@@ -7,14 +7,27 @@ import mgo.algorithm.CDGenome.DeterministicIndividual.{Individual, vectorFitness
 import mgo.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
 
 
+
+
+case class RandomSearch (
+                          val nsearchs : Int,
+                          val nrepets : Int,
+                          val seed : Int
+                        ) extends Optimization {
+  /**
+    * A new random object is created at each optimization but with the fixed seed for reproducibility
+     * @param fitness
+    * @param bounds
+    * @return
+    */
+  override def optimize(fitness: Vector[Double] => Vector[Double], bounds: Vector[C]): Result = {
+    Result.paretoFrontAsResult(RandomSearch.optimize(fitness)(bounds)(nsearchs)(new util.Random(seed)))
+  }
+}
+
+
+
 object RandomSearch {
-
-
-  /*def optimize(fitness : Vector[Double] => Vector[Double])(genome : Vector[C])(nsearchs : Int)(rng : Random) : Vector[(Vector[Double],Vector[Double])] = (1 until nsearchs).map { n =>
-      val xvec = Vector.fill(genome.size)(rng.nextDouble)
-      (fitness(xvec),xvec)
-    }.to[Vector].sortWith((x,y) => x._1(0) < y._1(0))
-  */
 
   /**
     * Optimize a fitness

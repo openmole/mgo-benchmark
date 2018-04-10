@@ -9,22 +9,19 @@ trait Noise {
     * @param x
     * @return
     */
-  def noise(x : Vector[Double]) : Vector[Double] = Vector.fill(x.size)(0.0)
+  def noise(x : Vector[Double]) : Vector[Double]
 
 }
 
 
 
-case class GaussianNoise1D(mu : Double,sigma: Double)
-
-
-object GaussianNoise1D extends Noise {
-
-  //def apply(mu: Double = 0.0, sigma: Double = 0.01) : GaussianNoise = GaussianNoise(mu,sigma)
-
-  def noise(x : Vector[Double])(noise: GaussianNoise1D)(rng : util.Random) : Vector[Double] = Vector.fill(x.size)((noise.sigma * rng.nextGaussian()) + noise.mu)
-
+case class GaussianNoise1D(mu : Double,sigma: Double, seed : Int) extends Noise {
+  def noise(x : Vector[Double]) : Vector[Double] = {
+    val rng = new util.Random(seed)
+    Vector.fill(x.size)(sigma * rng.nextGaussian() + mu)
+  }
 }
+
 
 /**
   * Multi-dimensional gaussian noise
@@ -32,19 +29,18 @@ object GaussianNoise1D extends Noise {
   * @param mu
   * @param sigma
   */
-case class GaussianNoiseIndep(mu : Vector[Double],sigma : Vector[Double])
-
-
-object GaussianNoiseIndep extends Noise {
-
-  def noise(x : Vector[Double],noise: GaussianNoiseIndep,rng : util.Random) : Vector[Double] = (noise.mu zip noise.sigma).map {
-    case (m,s) => s*rng.nextGaussian() + m
+case class GaussianNoiseIndep(mu : Vector[Double],sigma : Vector[Double], seed: Int) extends Noise {
+  def noise(x : Vector[Double]) : Vector[Double] = {
+    val rng = new util.Random(seed)
+    (mu zip sigma).map {
+      case (m,s) => s*rng.nextGaussian() + m
+    }
   }
-
 }
 
 
 
+/*
 case class GammaNoise()
 
 
@@ -54,7 +50,7 @@ object GammaNoise extends Noise {
 
   def noise(x : Vector[Double],noise: GammaNoise,rng : util.Random) : Vector[Double] = Vector.fill(x.size)(0.0)
 
-}
+}*/
 
 
 

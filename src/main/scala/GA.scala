@@ -1,7 +1,9 @@
 import mgo._
 import mgo.contexts._
 import freedsl.dsl._
-
+import NSGA2._
+import mgo.algorithm.CDGenome.NoisyIndividual.Individual
+import mgo.algorithm.EvolutionState
 
 
 object replication {
@@ -11,7 +13,7 @@ object replication {
   }
 
 
-  def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]) = {
+  def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]): Vector[Result] = {
     val rng = new util.Random(seed)
 
     val nsga2 = NSGA2(
