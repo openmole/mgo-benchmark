@@ -19,7 +19,9 @@ case class CocoProblem (
   /**
     * evaluate the problem
     */
-  override def evaluateFunction(x: Vector[Double]): Vector[Double] = CocoProblem.evaluateFunction(coco,this)(x)
+  override def evaluateFunction(x: Vector[Double]): Vector[Double] = fitness(x)
+
+  override def fitness: Vector[Double] => Vector[Double] = CocoProblem.evaluateFunction(coco,this)
 
 }
 

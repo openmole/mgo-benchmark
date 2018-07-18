@@ -16,13 +16,15 @@ case class RandomSearch (
                         ) extends Optimization {
   /**
     * A new random object is created at each optimization but with the fixed seed for reproducibility
-     * @param fitness
-    * @param bounds
+    * @param problem the problem to solve
     * @return
     */
-  override def optimize(fitness: Vector[Double] => Vector[Double], bounds: Vector[C]): Result = {
+  override def optimize(problem: Problem): Result = {
+    val fitness = problem.fitness
+    val bounds = problem.boundaries
     Result.paretoFrontAsResult(RandomSearch.optimize(fitness)(bounds)(nsearchs)(new util.Random(seed)))
   }
+
 }
 
 
@@ -50,7 +52,7 @@ object RandomSearch {
     * @return
     */
   def optimize(problem: Problem)(nsearchs: Int): Vector[(Vector[Double],Vector[Double])]  = {
-    optimize(problem.evaluateFunction(_))(problem.getBoundaries(problem))(nsearchs)(new util.Random)
+    optimize(problem.evaluateFunction(_))(problem.boundaries)(nsearchs)(new util.Random)
   }
 
 

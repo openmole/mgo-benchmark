@@ -9,7 +9,7 @@ import mgo.C
 
 trait Optimization {
 
-  def optimize(fitness: Vector[Double] => Vector[Double],bounds : Vector[C]) : Result
+  def optimize(problem: Problem) : Result
 
 }
 

@@ -2,12 +2,13 @@
 
 object Run extends App {
 
+  val iterations = 10000
 
 
 
   // test coco integration
   //Suite.testSuiteOptim("bbob-biobj")
-  Suite.testSuiteOptim("bbob")
+  Suite.testSuiteOptim("bbob",GradientDescent(iterations))
 
   // GA optim
   //val results = (0 until 100).map(GA.replication.replication)

@@ -24,6 +24,8 @@ case class Result(
 
 object Result {
 
+  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0)
+
   /**
     * Get the Pareto front corresponding to a result
     * @param result

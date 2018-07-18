@@ -46,6 +46,8 @@ object NSGA2 {
 
   case class Result(continuous: Vector[Double], discrete: Vector[Int], fitness: Vector[Double])
 
+
+
   def result(population: Vector[Individual], continuous: Vector[C]): Vector[Result] =
     keepFirstFront(population, vectorFitness.get).map { i =>
       Result(scaleContinuousValues(continuousValues.get(i.genome), continuous), Individual.genome composeLens discreteValues get i, i.fitness.toVector)
@@ -78,7 +80,10 @@ case class NSGA2(
   mu: Int,
   lambda: Int,
   fitness: Vector[Double] => Vector[Double],
-  continuous: Vector[C] = Vector.empty)
+  continuous: Vector[C] = Vector.empty) extends Optimization {
+
+  override def optimize(problem: Problem): Result = Result.empty
+}
 
 object NSGA2Operations {
 

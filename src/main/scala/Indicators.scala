@@ -17,14 +17,14 @@ object Indicators {
                          indicators: Vector[Vector[Result] => Double]
                         ) : Vector[Double] = {
     val results :Vector[Result] = (1 until nBootstraps).to[Vector].map {_ =>
-      optimization.optimize(problem.evaluateFunction(_), problem.getBoundaries())
+      optimization.optimize(problem)
     }
     indicators.map{_(results)}
   }
 
   def expectedIndicator(indic : Result => Double)(successCondition: Result => Boolean)(results : Vector[Result]): Double = {
-    val successes = results.map {case r => if (successCondition(r)){1.0}{0.0}}
-    val unsucc = results.map {case r => if (successCondition(r)){0.0}{1.0}}
+    val successes = results.map {case r => if (successCondition(r)){1.0} else {0.0}}
+    val unsucc = results.map {case r => if (successCondition(r)){0.0} else {1.0}}
     val ps = successes.sum / results.size
     successes.zip(results).map{case (s,r) => s*indic(r)}.sum / successes.sum + (1 - ps) * (unsucc.zip(results).map{case(s,r)=>s*indic(r)}.sum / unsucc.sum)/ps
   }

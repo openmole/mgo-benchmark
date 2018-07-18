@@ -14,7 +14,7 @@ trait Problem {
   /**
     * Optimization boundaries
     */
-  def getBoundaries(): Vector[C] = {
+  def boundaries: Vector[C] = {
     val bounds = lower_bounds zip upper_bounds
     bounds.map{b => C(b._1,b._2)}
   }
@@ -24,7 +24,14 @@ trait Problem {
     * @param x
     * @return
     */
-  def evaluateFunction(x : Vector[Double]) : Vector[Double]
+  def evaluateFunction(x : Vector[Double]) : Vector[Double] = fitness(x)
+
+
+  def fitness: Vector[Double] => Vector[Double]
+
+
+  override def toString: String = fitness.toString()
+
 
 }
 

@@ -1,7 +1,7 @@
 import mgo._
 import mgo.contexts._
 import freedsl.dsl._
-import NSGA2._
+import NSGA2.{Result, _}
 import mgo.algorithm.CDGenome.NoisyIndividual.Individual
 import mgo.algorithm.EvolutionState
 
@@ -57,6 +57,9 @@ object replication {
     //NSGA2.result(nsga2, finalPopulation).head.fitness.head
     //NSGA2.result(nsga2, finalPopulation).head.continuous
     //NSGA2.result(nsga2, finalPopulation)
+
+    implicit def nsga2ResultToResult(nr: NSGA2.Result): Result = Result.empty
+
     NSGA2.result(nsga2, finalPopulation)
   }
 

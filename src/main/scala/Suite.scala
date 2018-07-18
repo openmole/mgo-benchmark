@@ -73,7 +73,7 @@ object Suite {
   /**
     * testing
     */
-  def testSuiteOptim(name: String) = {
+  def testSuiteOptim(name: String, optimizer: Optimization) = {
     //val suite = Suite(coco,name,"","")
     val suite = getSuite(name)
 
@@ -81,10 +81,13 @@ object Suite {
     //while (problem != CocoProblem.emptyProblem){
     for {_ <- 1 to 20} {
       println("\nProblem : "+problem.name)
-      println("Boundaries : "+problem.getBoundaries(problem))
+      println("Boundaries : "+problem.boundaries)
       //println(CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
-      println("Best solution : "+RandomSearch.optimize(problem)(10000))
+      //println("Best solution : "+RandomSearch.optimize(problem)(10000))
       //println("Fvalinterest : "+Problem.getLargestFValuesOfInterest(problem))
+
+      println("Best solution : "+optimizer.optimize(problem))
+
       problem = getNextProblem(suite)
     }
 
