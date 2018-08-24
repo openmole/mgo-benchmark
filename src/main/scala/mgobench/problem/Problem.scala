@@ -34,3 +34,13 @@ trait Problem {
 
 
 }
+
+
+object Problem {
+
+  /**
+    * Empty problem
+    */
+  val emptyProblem = FitnessProblem(_,Vector.empty)
+
+}

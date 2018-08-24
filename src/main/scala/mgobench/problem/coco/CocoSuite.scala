@@ -1,16 +1,23 @@
 package mgobench.problem.coco
 
 import mgobench.optimize.Optimization
+import mgobench.problem.{Problem, Suite}
 import mgobench.utils.CocoJNI
 
-case class Suite(
+case class CocoSuite(
                   pointer:Long,
                   name:String
-                )
+                ) extends Suite {
+
+  override def getNextProblem: Problem = CocoSuite.getNextProblem(this)
+
+  override def reinitialize: Suite = CocoSuite.getSuite(name)
+
+}
 
 
 
-object Suite {
+object CocoSuite {
 
   //construct a unique coco object
   lazy val coco: CocoJNI = {
@@ -31,7 +38,7 @@ object Suite {
     println("creating suite " + suiteName)
     // set empty observer
     //coco.cocoGetObserver("no_observer", "")
-    new Suite(coco.cocoGetSuite(suiteName, suiteInstance, suiteOptions), suiteName)
+    new CocoSuite(coco.cocoGetSuite(suiteName, suiteInstance, suiteOptions), suiteName)
   }
 
 
@@ -40,17 +47,17 @@ object Suite {
   /**
   *  Get a suite from its name : "bbob", "bbob-biobj"
    */
-  def getSuite(name: String): Suite = {
+  def getSuite(name: String): CocoSuite = {
     // parameters example :
     //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
-    Suite.apply(coco,name, "","")
+    CocoSuite.apply(coco,name, "","")
   }
 
 
   /**
     *  Get next problem
     */
-  def getNextProblem(suite: Suite): CocoProblem = {
+  def getNextProblem(suite: CocoSuite): CocoProblem = {
     // get observer pointer
     //val observer = coco.cocoGetObserver("no_observer","")
     CocoProblem(coco,coco.cocoSuiteGetNextProblem(suite.pointer,observer))
@@ -60,13 +67,13 @@ object Suite {
 
   def problemNames(name: String) = {
 
-    val suite: Suite = Suite.getSuite("bbob-biobj")
+    val suite: CocoSuite = CocoSuite.getSuite("bbob-biobj")
     println("suite ok")
     //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
-    var problem = Suite.getNextProblem(suite)
+    var problem = CocoSuite.getNextProblem(suite)
     while (problem != CocoProblem.emptyProblem){
       println(problem.name)
-      problem = Suite.getNextProblem(suite)
+      problem = CocoSuite.getNextProblem(suite)
     }
 
   }
@@ -80,7 +87,7 @@ object Suite {
     //val suite = mgobench.problem.coco.Suite(coco,name,"","")
     val suite = getSuite(name)
 
-    var problem = Suite.getNextProblem(suite)
+    var problem = CocoSuite.getNextProblem(suite)
     //while (problem != mgobench.problem.coco.CocoProblem.emptyProblem){
     for {_ <- 1 to 20} {
       println("\nProblem : "+problem.name)
@@ -108,7 +115,7 @@ object Suite {
   /**
     * Finalizes the suite
     */
-  def finalizeSuite(suite: Suite): Unit = {
+  def finalizeSuite(suite: CocoSuite): Unit = {
     coco.cocoFinalizeObserver(observer)
     coco.cocoFinalizeSuite(suite.pointer)
   }

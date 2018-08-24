@@ -30,7 +30,7 @@ case class CocoProblem (
 object CocoProblem {
 
 
-  val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
+  //val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
 
   /**
     * Constructs the problem from the pointer.
@@ -38,7 +38,7 @@ object CocoProblem {
     * @throws Exception
     */
   def apply(coco: CocoJNI,pointer: Long) : CocoProblem = {
-    if(pointer == 0) return emptyProblem
+    if(pointer == 0) return Problem.emptyProblem
     else {
       return new CocoProblem(
         pointer,

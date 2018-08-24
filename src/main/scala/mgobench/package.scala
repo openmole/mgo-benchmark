@@ -1,5 +1,5 @@
 import mgobench.optimize.GradientDescent
-import mgobench.problem.coco.Suite
+import mgobench.problem.coco.CocoSuite
 
 
 package object mgobench {
