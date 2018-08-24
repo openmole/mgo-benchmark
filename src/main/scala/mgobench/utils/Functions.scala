@@ -1,3 +1,5 @@
+package mgobench.utils
+
 import mgo._
 
 import scala.math._

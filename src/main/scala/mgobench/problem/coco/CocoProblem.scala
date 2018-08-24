@@ -1,8 +1,7 @@
+package mgobench.problem.coco
 
-
-
-
-
+import mgobench.problem.Problem
+import mgobench.utils.CocoJNI
 
 case class CocoProblem (
                          pointer: Long, // Pointer to the coco_problem_t object
@@ -84,7 +83,7 @@ object CocoProblem {
 
 
   /*
-  def getGenome(problem: Problem): Genome = {
+  def getGenome(problem: mgobench.problem.Problem): Genome = {
     getBoundaries(problem)
   }
   */
@@ -92,8 +91,8 @@ object CocoProblem {
 
   /*
   // returns null pointers
-  def getLargestFValuesOfInterest(problem: Problem): Vector[Double] = {
-    val largestFvals = Suite.coco.cocoProblemGetLargestFValuesOfInterest(problem.pointer)
+  def getLargestFValuesOfInterest(problem: mgobench.problem.Problem): Vector[Double] = {
+    val largestFvals = mgobench.problem.coco.Suite.coco.cocoProblemGetLargestFValuesOfInterest(problem.pointer)
     println(largestFvals)
     largestFvals.to[Vector]
   }
@@ -109,12 +108,12 @@ object CocoProblem {
   }
 
   /*
-  def getEvaluationsConstraints(problem: Problem): Long = {
-    CocoJNI.cocoProblemGetEvaluationsConstraints(problem.pointer)
+  def getEvaluationsConstraints(problem: mgobench.problem.Problem): Long = {
+    mgobench.utils.CocoJNI.cocoProblemGetEvaluationsConstraints(problem.pointer)
   }
 
-  def isFinalTargetHit(problem: Problem): Boolean = {
-    CocoJNI.cocoProblemIsFinalTargetHit(problem.pointer) == 1
+  def isFinalTargetHit(problem: mgobench.problem.Problem): Boolean = {
+    mgobench.utils.CocoJNI.cocoProblemIsFinalTargetHit(problem.pointer) == 1
   }
   */
 

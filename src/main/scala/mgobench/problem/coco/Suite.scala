@@ -1,4 +1,7 @@
+package mgobench.problem.coco
 
+import mgobench.optimize.Optimization
+import mgobench.utils.CocoJNI
 
 case class Suite(
                   pointer:Long,
@@ -11,7 +14,7 @@ object Suite {
 
   //construct a unique coco object
   lazy val coco: CocoJNI = {
-    //System.loadLibrary("CocoJNI")
+    //System.loadLibrary("mgobench.utils.CocoJNI")
     //println(ClassLoader.getSystemClassLoader())
     //println(ClassLoader.class.("loadedLibraryNames").get(ClassLoader.getSystemClassLoader()))
     val coco = new CocoJNI
@@ -74,17 +77,17 @@ object Suite {
     * testing
     */
   def testSuiteOptim(name: String, optimizer: Optimization) = {
-    //val suite = Suite(coco,name,"","")
+    //val suite = mgobench.problem.coco.Suite(coco,name,"","")
     val suite = getSuite(name)
 
     var problem = Suite.getNextProblem(suite)
-    //while (problem != CocoProblem.emptyProblem){
+    //while (problem != mgobench.problem.coco.CocoProblem.emptyProblem){
     for {_ <- 1 to 20} {
       println("\nProblem : "+problem.name)
       println("Boundaries : "+problem.boundaries)
-      //println(CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
-      //println("Best solution : "+RandomSearch.optimize(problem)(10000))
-      //println("Fvalinterest : "+Problem.getLargestFValuesOfInterest(problem))
+      //println(mgobench.problem.coco.CocoProblem.evaluateFunction(coco,problem)(Vector.fill(problem.dimension)(0.0)))
+      //println("Best solution : "+mgobench.optimize.RandomSearch.optimize(problem)(10000))
+      //println("Fvalinterest : "+mgobench.problem.Problem.getLargestFValuesOfInterest(problem))
 
       println("Best solution : "+optimizer.optimize(problem))
 
@@ -95,9 +98,9 @@ object Suite {
 
   }
 
-  //def firstFitness(x: Vector[Double]): Vector[Double] = Problem.evaluateFunction(coco,firstProblem,x)
+  //def firstFitness(x: Vector[Double]): Vector[Double] = mgobench.problem.Problem.evaluateFunction(coco,firstProblem,x)
   //println(firstFitness(Vector.fill(firstProblem.dimension)(0.0)))
-  //val boundaries = Problem.getBoundaries(firstProblem)
+  //val boundaries = mgobench.problem.Problem.getBoundaries(firstProblem)
 
 
 
@@ -116,17 +119,17 @@ object Suite {
 
 // not needed for now
 /*
-class SuiteIterator(coco : CocoJNI,suite : Suite) extends Iterator[Problem] {
+class SuiteIterator(coco : mgobench.utils.CocoJNI,suite : mgobench.problem.coco.Suite) extends Iterator[mgobench.problem.Problem] {
 
 
 
-  //def apply(c:CocoJNI,s:Suite){new SuiteIterator(c,s)}
+  //def apply(c:mgobench.utils.CocoJNI,s:mgobench.problem.coco.Suite){new SuiteIterator(c,s)}
 
   // will not work as we rely on the side effects of the native library -> dirtily test in output
-  //override def hasNext: Boolean = Suite.getNextProblem(coco,suite) == Problem.emptyProblem
+  //override def hasNext: Boolean = mgobench.problem.coco.Suite.getNextProblem(coco,suite) == mgobench.problem.Problem.emptyProblem
   override def hasNext: Boolean = true
 
-  override def next(): Problem = Suite.getNextProblem(coco,suite)
+  override def next(): mgobench.problem.Problem = mgobench.problem.coco.Suite.getNextProblem(coco,suite)
 
 }
 */

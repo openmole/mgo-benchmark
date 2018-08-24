@@ -1,6 +1,6 @@
+package mgobench.problem
 
-import mgo._
-
+import mgo.C
 
 trait Problem {
 
@@ -12,7 +12,7 @@ trait Problem {
 
 
   /**
-    * Optimization boundaries
+    * mgobench.optimize.Optimization boundaries
     */
   def boundaries: Vector[C] = {
     val bounds = lower_bounds zip upper_bounds
@@ -34,4 +34,3 @@ trait Problem {
 
 
 }
-

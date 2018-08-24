@@ -1,10 +1,13 @@
+package mgobench.optimize
+
 
 import mgo._
 
-import util.Random
-import algorithm._
-import mgo.algorithm.CDGenome.DeterministicIndividual.{Individual, vectorFitness}
-import mgo.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
+import mgobench.utils.benchmark
+import mgobench.problem.Problem
+import mgobench.result.Result
+
+import scala.util.Random
 
 
 
@@ -59,8 +62,8 @@ object RandomSearch {
 
 
   // testing
-  //println(RandomSearch.optimize(Rastrigin.rastrigin.apply)(Rastrigin.rastrigin.genome(2))(1000)(new util.Random(0)))
-  //println(RandomSearch.optimize(Rosenbrock.rosenbrock.apply)(Rosenbrock.rosenbrock.genome(2))(10000)(new util.Random(0)))
+  //println(mgobench.optimize.RandomSearch.optimize(Rastrigin.rastrigin.apply)(Rastrigin.rastrigin.genome(2))(1000)(new util.Random(0)))
+  //println(mgobench.optimize.RandomSearch.optimize(Rosenbrock.rosenbrock.apply)(Rosenbrock.rosenbrock.genome(2))(10000)(new util.Random(0)))
   //println(Rosenbrock.counter)
 
 

@@ -1,9 +1,11 @@
+package mgobench.result
+
 
 
 /**
-  * Result is a Pareto front
+  * mgobench.result.Result is a Pareto front
   */
-//type Result = Vector[(Vector[Double],Vector[Double])]
+//type mgobench.result.Result = Vector[(Vector[Double],Vector[Double])]
 
 case class Result(
                   points: Vector[Vector[Double]],

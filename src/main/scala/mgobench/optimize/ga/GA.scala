@@ -1,9 +1,13 @@
+package mgobench.optimize.ga
+
 import mgo._
 import mgo.contexts._
 import freedsl.dsl._
 import NSGA2.{Result, _}
 import mgo.algorithm.CDGenome.NoisyIndividual.Individual
 import mgo.algorithm.EvolutionState
+
+import mgobench.result._
 
 
 object replication {
@@ -13,7 +17,7 @@ object replication {
   }
 
 
-  def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]): Vector[Result] = {
+  def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]): Vector[mgobench.result.Result] = {
     val rng = new util.Random(seed)
 
     val nsga2 = NSGA2(
@@ -58,9 +62,10 @@ object replication {
     //NSGA2.result(nsga2, finalPopulation).head.continuous
     //NSGA2.result(nsga2, finalPopulation)
 
-    implicit def nsga2ResultToResult(nr: NSGA2.Result): Result = Result.empty
+    //implicit def nsga2ResultToResult(nr: NSGA2.Result): mgobench.result.Result = mgobench.result.Result.empty
+    def nsga2ResultToResult(nr: NSGA2.Result): mgobench.result.Result = mgobench.result.Result.empty
 
-    NSGA2.result(nsga2, finalPopulation)
+    NSGA2.result(nsga2, finalPopulation).map(nsga2ResultToResult)
   }
 
 

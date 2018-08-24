@@ -1,4 +1,7 @@
-import mgo.C
+package mgobench.result
+
+import mgobench.optimize.Optimization
+import mgobench.problem.Problem
 
 
 

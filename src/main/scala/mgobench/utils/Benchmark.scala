@@ -1,3 +1,5 @@
+package mgobench.utils
+
 import mgo.algorithm.CDGenome.DeterministicIndividual.{Individual, vectorFitness}
 import mgo.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
 import mgo.algorithm.keepFirstFront

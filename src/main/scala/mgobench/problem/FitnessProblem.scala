@@ -1,3 +1,5 @@
+package mgobench.problem
+
 import mgo.C
 
 
