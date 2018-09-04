@@ -31,6 +31,7 @@ libraryDependencies += "org.scalanlp" % "breeze_2.10" % "0.12" exclude("com.chuu
 
 //libraryDependencies += "com.github.transcendent-ai-labs.DynaML" % "dynaml-core_2.11" % "v1.5.3-beta.2"
 
-javaOptions += "-Djava.library.path=/home/raimbault/ComplexSystems/MGO/mgo-benchmark"
+javaOptions += "-Djava.library.path=/home/raimbault/ComplexSystems/NoisyEA/Models/mgo-benchmark"
+//scalacOptions += "-cp ."
 
 fork := true

@@ -2,7 +2,7 @@ package mgobench.utils
 
 
 class CocoJNI {
-  System.loadLibrary("mgobench.utils.CocoJNI")
+  System.loadLibrary("CocoJNI")
   @native def cocoSetLogLevel(logLevel: String): Unit
   @native def cocoGetObserver(observerName: String, observerOptions: String): Long
   @native def cocoFinalizeObserver(observerPointer: Long): Unit

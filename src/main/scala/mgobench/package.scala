@@ -8,7 +8,7 @@ package object mgobench {
 
   def testGradientDescent(iterations: Int) = {
     //Suite.testSuiteOptim("bbob",GradientDescent(iterations))
-    val res = Benchmark.benchmark(Seq(GradientDescent(iterations)),Seq())
+    val res = Benchmark.benchmark(Seq(GradientDescent(iterations)),CocoSuite.getSuite("bbob"))
     println(res)
   }
 

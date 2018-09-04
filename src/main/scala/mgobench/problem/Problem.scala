@@ -29,6 +29,7 @@ trait Problem {
 
   def fitness: Vector[Double] => Vector[Double]
 
+  def isEmpty: Boolean
 
   override def toString: String = fitness.toString()
 
@@ -41,6 +42,6 @@ object Problem {
   /**
     * Empty problem
     */
-  val emptyProblem = FitnessProblem(_,Vector.empty)
+  val emptyProblem = FitnessProblem(0,0,0,Vector.empty,Vector.empty,x => x,true)
 
 }

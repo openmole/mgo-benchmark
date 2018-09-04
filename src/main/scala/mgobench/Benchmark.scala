@@ -19,12 +19,23 @@ object Benchmark {
     optimizers.map{case o => problems.map{o.optimize(_)}}
   }
 
+  /**
+    * Benchmqrks a set of optimizers on a suite (integrated set of problems)
+    *
+    * @param optimizers
+    * @param suite
+    * @return
+    */
   def benchmark(optimizers: Seq[Optimization], suite: Suite): Seq[Seq[Result]] = {
     var currentProblem = suite.getNextProblem
-    val res = ArrayBuffer[Seq]
-    while(currentProblem!=Problem.emptyProblem){
-
+    val res = new ArrayBuffer[Seq[Result]]
+    while(!currentProblem.isEmpty){
+      println("Solving problem "+currentProblem.toString+" with "+optimizers.size+" optimizers")
+      val currentResults: Seq[Result] = optimizers.map{case o => o.optimize(currentProblem)}
+      res.append(currentResults)
+      currentProblem = suite.getNextProblem
     }
+    res.toSeq
   }
 
 

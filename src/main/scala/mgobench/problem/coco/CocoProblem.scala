@@ -13,7 +13,8 @@ case class CocoProblem (
                          upper_bounds: Vector[Double],
                          id: String,
                          name: String,
-                         index: Long
+                         index: Long,
+                         isEmpty: Boolean
                        ) extends Problem {
   /**
     * evaluate the problem
@@ -30,7 +31,7 @@ case class CocoProblem (
 object CocoProblem {
 
 
-  //val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0)
+  val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0,true)
 
   /**
     * Constructs the problem from the pointer.
@@ -38,7 +39,7 @@ object CocoProblem {
     * @throws Exception
     */
   def apply(coco: CocoJNI,pointer: Long) : CocoProblem = {
-    if(pointer == 0) return Problem.emptyProblem
+    if(pointer == 0) return emptyProblem
     else {
       return new CocoProblem(
         pointer,
@@ -50,7 +51,8 @@ object CocoProblem {
         coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
         coco.cocoProblemGetId(pointer),
         coco.cocoProblemGetName(pointer),
-        coco.cocoProblemGetIndex(pointer)
+        coco.cocoProblemGetIndex(pointer),
+        false
       )
     }
   }
