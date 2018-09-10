@@ -28,6 +28,8 @@ case class RandomSearch (
     Result.paretoFrontAsResult(RandomSearch.optimize(fitness)(bounds)(nsearchs)(new util.Random(seed)))
   }
 
+
+
 }
 
 

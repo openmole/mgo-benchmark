@@ -10,6 +10,7 @@ trait Problem {
   def lower_bounds: Vector[Double]
   def upper_bounds: Vector[Double]
 
+  def problemName: String
 
   /**
     * mgobench.optimize.Optimization boundaries
@@ -31,8 +32,8 @@ trait Problem {
 
   def isEmpty: Boolean
 
-  override def toString: String = fitness.toString()
-
+  //override def toString: String = fitness.toString()
+  override def toString: String = problemName
 
 }
 

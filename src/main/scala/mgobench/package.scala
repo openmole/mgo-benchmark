@@ -1,4 +1,4 @@
-import mgobench.optimize.GradientDescent
+import mgobench.optimize.{GradientDescent, RandomSearch}
 import mgobench.problem.coco.CocoSuite
 
 
@@ -8,7 +8,7 @@ package object mgobench {
 
   def testGradientDescent(iterations: Int) = {
     //Suite.testSuiteOptim("bbob",GradientDescent(iterations))
-    val res = Benchmark.benchmark(Seq(GradientDescent(iterations)),CocoSuite.getSuite("bbob"))
+    val res = Benchmark.benchmark(Seq(GradientDescent(iterations),RandomSearch(iterations)),CocoSuite.getSuite("bbob"))
     println(res)
   }
 

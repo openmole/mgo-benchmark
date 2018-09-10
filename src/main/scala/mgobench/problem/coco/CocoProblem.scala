@@ -23,6 +23,8 @@ case class CocoProblem (
 
   override def fitness: Vector[Double] => Vector[Double] = CocoProblem.evaluateFunction(coco,this)
 
+  override def problemName: String = name
+
 }
 
 

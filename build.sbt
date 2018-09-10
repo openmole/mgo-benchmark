@@ -23,8 +23,8 @@ libraryDependencies += "fr.iscpif" %% "mgo" % "3.8-SNAPSHOT"
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "2.10.4"
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "1.2.4"
 
-libraryDependencies += "org.scalanlp" % "breeze_2.10" % "0.12" exclude("com.chuusai", "shapeless_2.10.4")
-//libraryDependencies += "org.scalanlp" %% "breeze" % "0.12"
+//libraryDependencies += "org.scalanlp" % "breeze_2.10" % "0.12" exclude("com.chuusai", "shapeless_2.10.4")
+libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"
 
 //libraryDependencies += "org.jzy3d" % "jzy3d-api" % "0.9.1"
 

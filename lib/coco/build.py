@@ -3,6 +3,8 @@ import os
 from amalgamate import amalgamate
 from cocoutils import make, run, python, check_output, expand_file
 
+COCOJNI_CLASS='mgobench/utils/CocoJNI.scala'
+SOURCE_ROOT = '../../src/main/scala'
 
 CORE_FILES = ['src/coco_random.c',
               'src/coco_suite.c',
@@ -21,9 +23,9 @@ expand_file('src/coco.h', 'build/coco.h',{})
 
 # compile cocojni class and generate c header
 #run('../../src/main/scala', ['javac', 'mgobench/utils/CocoJNI.scala']
-run('../../src/main/scala', ['scalac', 'mgobench/utils/CocoJNI.scala'])
+run(SOURCE_ROOT, ['scalac', COCOJNI_CLASS])
 # header
-run('../../src/main/scala', ['javah', 'mgobench.utils.CocoJNI'])
+run(SOURCE_ROOT, ['javah', COCOJNI_CLASS.replace("/",".").replace(".scala","")])
 
 # change CocoJNI.c
 os.system('./generateInterface.sh')
@@ -33,10 +35,10 @@ jdkpath = check_output(['locate', 'jni.h'],env=os.environ, universal_newlines=Tr
 jdkpath1 = jdkpath.split("jni.h")[0]
 jdkpath2 = jdkpath1 + '/linux'
 run('build',
-    ['gcc', '-I', jdkpath1, '-I', jdkpath2, '-c', 'mgobench_utils_CocoJNI.c'])
+    ['gcc', '-I', jdkpath1, '-I', jdkpath2, '-c', COCOJNI_CLASS.replace(".scala",".c").replace("/","_")])
 run('build',
     ['gcc', '-I', jdkpath1, '-I', jdkpath2, '-o',
-     'libmgobench_utils_CocoJNI.so', '-fPIC', '-shared', 'mgobench_utils_CocoJNI.c'])
+     'lib'+COCOJNI_CLASS.replace(".scala",".so").replace("/","_"), '-fPIC', '-shared',COCOJNI_CLASS.replace(".scala",".c").replace("/","_")])
 
 
 # recompile scala classes : at runtime ?

@@ -45,7 +45,7 @@ object GradientDescent {
     val gradient = new ApproximateGradientFunction(f)
 
     def calculate(x: DenseVector[Double]): (Double, DenseVector[Double]) = {
-      val grads = (1 until n).map{case i => gradient.calculate(x)}
+      val grads = (1 to n by 1).map{case i => gradient.calculate(x)}
       (grads.map(_._1).sum / n,grads(0)._2)
     }
   }

@@ -30,7 +30,7 @@ object Benchmark {
     var currentProblem = suite.getNextProblem
     val res = new ArrayBuffer[Seq[Result]]
     while(!currentProblem.isEmpty){
-      println("Solving problem "+currentProblem.toString+" with "+optimizers.size+" optimizers")
+      println("Solving problem "+currentProblem.toString+" with "+optimizers.size+" optimizers ("+optimizers.mkString(";"))
       val currentResults: Seq[Result] = optimizers.map{case o => o.optimize(currentProblem)}
       res.append(currentResults)
       currentProblem = suite.getNextProblem
