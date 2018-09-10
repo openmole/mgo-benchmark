@@ -24,7 +24,8 @@ package object mgobench {
 
   def testCocoIntegration() = {
     // test coco integration
-    //mgobench.problem.coco.Suite.testSuiteOptim("bbob-biobj")
+    //mgobench.problem.coco.CocoSuite.testSuiteOptim("bbob",optimize.RandomSearch(2))
+    mgobench.problem.coco.CocoSuite.testSuiteOptim("bbob-biobj",optimize.RandomSearch(2))
   }
 
 }

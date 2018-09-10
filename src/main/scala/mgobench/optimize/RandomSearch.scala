@@ -34,6 +34,9 @@ case class RandomSearch (
 
 object RandomSearch {
 
+  def apply(nsearchs: Int): RandomSearch = RandomSearch(nsearchs,1,0)
+
+
   /**
     * Optimize a fitness
     * @param fitness fitness function

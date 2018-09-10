@@ -12,6 +12,7 @@ resolvers += Resolver.sonatypeRepo("public")
 resolvers += Resolver.sonatypeRepo("staging")
 resolvers += Resolver.sonatypeRepo("snapshots")
 resolvers += Resolver.sonatypeRepo("releases")
+resolvers += Resolver.mavenCentral
 
 //resolvers += "jitpack" at "https://jitpack.io"
 //resolvers += "Jzy3d Maven Release Repository" at "http://maven.jzy3d.org/releases"
@@ -31,7 +32,9 @@ libraryDependencies += "org.scalanlp" % "breeze_2.10" % "0.12" exclude("com.chuu
 
 //libraryDependencies += "com.github.transcendent-ai-labs.DynaML" % "dynaml-core_2.11" % "v1.5.3-beta.2"
 
-javaOptions += "-Djava.library.path=/home/raimbault/ComplexSystems/NoisyEA/Models/mgo-benchmark"
+//libraryDependencies += "net.cilib" % "cilib_2.11" % "2.0.0-M1"
+
+javaOptions += "-Djava.library.path=/home/raimbault/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
 //scalacOptions += "-cp ."
 
 fork := true

@@ -5,9 +5,9 @@ object Run extends App {
 
   val iterations = 10000
 
-  testGradientDescent(iterations)
+  //testGradientDescent(iterations)
 
-  //testCocoIntegration()
+  testCocoIntegration()
 
   //testGAOptim()
 
