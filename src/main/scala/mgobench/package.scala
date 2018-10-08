@@ -1,14 +1,20 @@
-import mgobench.optimize.{GradientDescent, RandomSearch}
+import mgobench.optimize._
 import mgobench.problem.coco.CocoSuite
 
 
 package object mgobench {
 
 
+  def resultExtraction() = {
+    //mgobench.problem.coco.CocoSolutions.testResultExtraction()
+    mgobench.problem.coco.CocoSolutions.runResultExtraction()
+  }
+
+
 
   def testGradientDescent(iterations: Int) = {
     //Suite.testSuiteOptim("bbob",GradientDescent(iterations))
-    val res = Benchmark.benchmark(Seq(GradientDescent(iterations),RandomSearch(iterations)),CocoSuite.getSuite("bbob"))
+    val res = Benchmark.benchmark(Seq(GradientDescent(iterations),mgobench.optimize.RandomSearch(iterations)),nBootstraps = 1,CocoSuite.getSuite("bbob"))
     println(res)
   }
 

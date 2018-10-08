@@ -20,20 +20,23 @@ object Benchmark {
   }
 
   /**
-    * Benchmqrks a set of optimizers on a suite (integrated set of problems)
+    * Benchmarks a set of optimizers on a suite (integrated set of problems)
     *
     * @param optimizers
     * @param suite
-    * @return
+    * @return Everything flatten, store problem in Result
     */
-  def benchmark(optimizers: Seq[Optimization], suite: Suite): Seq[Seq[Result]] = {
+  def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 2): Seq[Result] = {
     var currentProblem = suite.getNextProblem
-    val res = new ArrayBuffer[Seq[Result]]
-    while(!currentProblem.isEmpty){
-      println("Solving problem "+currentProblem.toString+" with "+optimizers.size+" optimizers ("+optimizers.mkString(";"))
-      val currentResults: Seq[Result] = optimizers.map{case o => o.optimize(currentProblem)}
-      res.append(currentResults)
+    val res = new ArrayBuffer[Result]
+    var k = 0
+    while(!currentProblem.isEmpty&&k<problemsNumber){
+      (1 until nBootstraps).foreach {case i =>
+        println("Solving problem " + currentProblem.toString + " with " + optimizers.size + " optimizers (" + optimizers.mkString(";")+" repet "+i)
+        optimizers.foreach { case o => res.append(o.optimize(currentProblem)) }
+      }
       currentProblem = suite.getNextProblem
+      k=k+1
     }
     res.toSeq
   }

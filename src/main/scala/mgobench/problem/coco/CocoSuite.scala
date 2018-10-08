@@ -6,7 +6,8 @@ import mgobench.utils.CocoJNI
 
 case class CocoSuite(
                   pointer:Long,
-                  name:String
+                  name:String//,
+                  //number_of_problems: Int = 1
                 ) extends Suite {
 
   override def getNextProblem: Problem = CocoSuite.getNextProblem(this)

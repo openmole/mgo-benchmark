@@ -14,6 +14,8 @@ import mgobench.problem.Problem
 
 object Indicators {
 
+  /*
+  // bootstrap should be explicited in benchmark, not in indicators
   def estimateIndicators(problem : Problem,
                          optimization : Optimization,
                          nBootstraps: Int,
@@ -24,6 +26,7 @@ object Indicators {
     }
     indicators.map{_(results)}
   }
+  */
 
   def expectedIndicator(indic : Result => Double)(successCondition: Result => Boolean)(results : Vector[Result]): Double = {
     val successes = results.map {case r => if (successCondition(r)){1.0} else {0.0}}

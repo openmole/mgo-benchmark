@@ -3,10 +3,10 @@ package mgobench
 
 object Run extends App {
 
-  val iterations = 1000
+  val iterations = 100
 
-  mgobench.problem.coco.CocoSolutions.testResultExtraction()
-  //testGradientDescent(iterations)
+  //resultExtraction()
+  testGradientDescent(iterations)
   //testCocoIntegration()
   //testGAOptim()
 

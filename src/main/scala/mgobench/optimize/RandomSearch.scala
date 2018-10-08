@@ -25,7 +25,7 @@ case class RandomSearch (
   override def optimize(problem: Problem): Result = {
     val fitness = problem.fitness
     val bounds = problem.boundaries
-    Result.paretoFrontAsResult(RandomSearch.optimize(fitness)(bounds)(nsearchs)(new util.Random(seed)))
+    Result.paretoFrontAsResult(RandomSearch.optimize(fitness)(bounds)(nsearchs)(new util.Random(seed)),problem)
   }
 
 

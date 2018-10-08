@@ -79,7 +79,8 @@ object GradientDescent {
       points = Vector(minstate.x.toScalaVector()),
       values =Vector(problem.fitness(minstate.x.toScalaVector())),
       precisions = Vector(Vector.fill(problem.number_of_objectives)(0.0)),
-      runs = minstate.iter
+      runs = minstate.iter,
+      problem = problem
     )
   }
 

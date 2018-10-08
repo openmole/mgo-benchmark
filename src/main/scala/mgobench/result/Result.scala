@@ -1,5 +1,6 @@
 package mgobench.result
 
+import mgobench.problem.Problem
 
 
 /**
@@ -11,7 +12,8 @@ case class Result(
                   points: Vector[Vector[Double]],
                   values: Vector[Vector[Double]],
                   precisions : Vector[Vector[Double]],
-                  runs: Int
+                  runs: Int,
+                  problem: Problem
                  ) {
 
   /**
@@ -26,7 +28,7 @@ case class Result(
 
 object Result {
 
-  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0)
+  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem)
 
   /**
     * Get the Pareto front corresponding to a result
@@ -40,8 +42,8 @@ object Result {
     * @param front
     * @return
     */
-  def paretoFrontAsResult(front: Vector[(Vector[Double],Vector[Double])]) : Result =
-    Result(front.map{_._1},front.map{_._2},Vector.fill(front.size)(Vector.fill(front(0)._1.size)(0.0)),0)
+  def paretoFrontAsResult(front: Vector[(Vector[Double],Vector[Double])],problem: Problem) : Result =
+    Result(front.map{_._1},front.map{_._2},Vector.fill(front.size)(Vector.fill(front(0)._1.size)(0.0)),0,problem)
 
 
 }

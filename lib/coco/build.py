@@ -5,6 +5,7 @@ from cocoutils import make, run, python, check_output, expand_file
 
 COCOJNI_CLASS='mgobench/utils/CocoJNI.scala'
 SOURCE_ROOT = '../../src/main/scala'
+BUILD_DIR = 'build'
 
 CORE_FILES = ['src/coco_random.c',
               'src/coco_suite.c',
@@ -16,10 +17,10 @@ CORE_FILES = ['src/coco_random.c',
 RELEASE = os.getenv('COCO_RELEASE', 'false') == 'true'
 
 # amalgamate coco source
-amalgamate(CORE_FILES,'build/coco.c', RELEASE,{})
+amalgamate(CORE_FILES,BUILD_DIR+'/coco.c', RELEASE,{})
 
 # expand header
-expand_file('src/coco.h', 'build/coco.h',{})
+expand_file('src/coco.h', BUILD_DIR+'/coco.h',{})
 
 # compile cocojni class and generate c header
 #run('../../src/main/scala', ['javac', 'mgobench/utils/CocoJNI.scala']

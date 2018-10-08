@@ -34,7 +34,8 @@ libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"
 
 //libraryDependencies += "net.cilib" % "cilib_2.11" % "2.0.0-M1"
 
-javaOptions += "-Djava.library.path=/home/raimbault/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
+//javaOptions += "-Djava.library.path="+sys.env.get("CS_HOME")+"/NoisyEA/Models/mgo-benchmark/lib/coco/build"
+javaOptions += "-Djava.library.path=/Users/juste/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
 //scalacOptions += "-cp ."
 
 fork := true
