@@ -31,7 +31,7 @@ object Benchmark {
     val res = new ArrayBuffer[Result]
     var k = 0
     while(!currentProblem.isEmpty&&k<problemsNumber){
-      (1 until nBootstraps).foreach {case i =>
+      (0 until nBootstraps).foreach {case i =>
         println("Solving problem " + currentProblem.toString + " with " + optimizers.size + " optimizers (" + optimizers.mkString(";")+" repet "+i)
         optimizers.foreach { case o => res.append(o.optimize(currentProblem)) }
       }

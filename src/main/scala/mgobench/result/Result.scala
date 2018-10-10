@@ -1,5 +1,6 @@
 package mgobench.result
 
+import mgobench.optimize.{Optimization, RandomSearch}
 import mgobench.problem.Problem
 
 
@@ -13,7 +14,8 @@ case class Result(
                   values: Vector[Vector[Double]],
                   precisions : Vector[Vector[Double]],
                   runs: Int,
-                  problem: Problem
+                  problem: Problem,
+                  optimizer: Optimization
                  ) {
 
   /**
@@ -28,7 +30,7 @@ case class Result(
 
 object Result {
 
-  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem)
+  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem,new RandomSearch(0,0,0))
 
   /**
     * Get the Pareto front corresponding to a result
@@ -38,13 +40,15 @@ object Result {
   def resultAsParetoFront(result: Result): Vector[(Vector[Double],Vector[Double])] = result.points zip result.values
 
   /**
+    * FIX : not interesting as Result is contextualized to an optimizer and problem
+    *
     * Dummy result for a deterministic Pareto front
     * @param front
     * @return
     */
-  def paretoFrontAsResult(front: Vector[(Vector[Double],Vector[Double])],problem: Problem) : Result =
+  /*def paretoFrontAsResult(front: Vector[(Vector[Double],Vector[Double])],problem: Problem) : Result =
     Result(front.map{_._1},front.map{_._2},Vector.fill(front.size)(Vector.fill(front(0)._1.size)(0.0)),0,problem)
-
+  */
 
 }
 
