@@ -32,6 +32,8 @@ trait Problem {
 
   def isEmpty: Boolean
 
+  def evaluations: Int
+
   //override def toString: String = fitness.toString()
   override def toString: String = problemName
 

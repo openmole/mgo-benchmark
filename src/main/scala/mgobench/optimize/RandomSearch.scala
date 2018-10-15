@@ -24,7 +24,7 @@ case class RandomSearch (
     */
   override def optimize(problem: Problem): Result = {
     val rawres: Vector[(Vector[Double],Vector[Double])] = RandomSearch.optimize(problem)(nsearchs)
-    Result(rawres.map{_._1},)
+    Result(rawres.map{_._1},rawres.map{_._2},Vector.empty,nsearchs,problem,this)
   }
 
 

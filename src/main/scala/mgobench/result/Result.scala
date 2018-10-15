@@ -12,7 +12,12 @@ import mgobench.problem.Problem
 case class Result(
                   points: Vector[Vector[Double]],
                   values: Vector[Vector[Double]],
+
                   precisions : Vector[Vector[Double]],
+
+                  /**
+                    * Total number of function evaluations
+                    */
                   runs: Int,
                   problem: Problem,
                   optimizer: Optimization

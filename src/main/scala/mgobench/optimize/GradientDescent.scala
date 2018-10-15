@@ -24,7 +24,12 @@ case class GradientDescent (
                              /**
                                * step to compute gradient
                                */
-                             epsilon: Double = 1e-5
+                             epsilon: Double = 1e-5,
+
+                             m: Int = 7,
+
+                             tolerance: Double = 1e-5
+
                            ) extends Optimization {
 
   override def optimize(problem: Problem): Result = GradientDescent.optimize(this,problem)
@@ -45,7 +50,7 @@ object GradientDescent {
     val gradient = new ApproximateGradientFunction(f)
 
     def calculate(x: DenseVector[Double]): (Double, DenseVector[Double]) = {
-      val grads = (1 to n by 1).map{case i => gradient.calculate(x)}
+      val grads = (1 to n by 1).map{_ => gradient.calculate(x)}
       (grads.map(_._1).sum / n,grads(0)._2)
     }
   }
@@ -60,6 +65,8 @@ object GradientDescent {
     */
   def optimize(gradientDescent: GradientDescent,problem: Problem): Result = {
 
+    val prevevals = problem.evaluations
+
     // gradient descent is a monoobjective optimization : we aggregate by summing here
     val fitness: DenseVector[Double] => Double = {x => problem.fitness(x.toScalaVector()) sum}
     val boundaries = problem.boundaries
@@ -69,17 +76,19 @@ object GradientDescent {
     val gradient = new StochasticApproximateGradient(fitness,gradientDescent.stochastic_iterations,gradientDescent.epsilon)
 
     // define the solver
-    println("Running LBFGS on problem "+problem.toString)
-    val lbfgs = new LBFGS[DenseVector[Double]](maxIter=gradientDescent.iterations, m=3)
+    //println("Running LBFGS on problem "+problem.toString)
+    val lbfgs = new LBFGS[DenseVector[Double]](maxIter=gradientDescent.iterations, m=gradientDescent.m,tolerance=gradientDescent.tolerance)
 
     //val res = lbfgs.minimize(gradient,new DenseVector(gradientDescent.x0.toArray))
     val minstate = lbfgs.minimizeAndReturnState(gradient,new DenseVector(problem.boundaries.map{case c => (c.low + c.high)/2}.toArray))
+
+    //println(minstate.adjustedGradient.map{_.abs}.sum)
 
     Result(
       points = Vector(minstate.x.toScalaVector()),
       values =Vector(problem.fitness(minstate.x.toScalaVector())),
       precisions = Vector(Vector.fill(problem.number_of_objectives)(0.0)),
-      runs = minstate.iter,
+      runs = problem.evaluations - prevevals,//minstate.iter,
       problem = problem,
       optimizer = gradientDescent
     )

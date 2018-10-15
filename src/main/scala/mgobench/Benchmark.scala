@@ -1,6 +1,7 @@
 package mgobench
 
 import mgobench.optimize.Optimization
+import mgobench.problem.coco.CocoProblem
 import mgobench.problem.{Problem, Suite}
 import mgobench.result.Result
 
@@ -24,19 +25,26 @@ object Benchmark {
     *
     * @param optimizers
     * @param suite
-    * @return Everything flatten, store problem in Result
+    * @return Everything flatten (problem and optimizer stored in Result)
     */
-  def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 2): Seq[Result] = {
+  def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 1): Seq[Result] = {
     var currentProblem = suite.getNextProblem
     val res = new ArrayBuffer[Result]
     var k = 0
     while(!currentProblem.isEmpty&&k<problemsNumber){
-      (0 until nBootstraps).foreach {case i =>
-        println("Solving problem " + currentProblem.toString + " with " + optimizers.size + " optimizers (" + optimizers.mkString(";")+" repet "+i)
-        optimizers.foreach { case o => res.append(o.optimize(currentProblem)) }
+      if(currentProblem.asInstanceOf[CocoProblem].instance <= 5) {
+        (0 until nBootstraps).foreach { case i =>
+          println("Solving problem " + currentProblem.toString + " with " + optimizers.size + " optimizers (" + optimizers.mkString(";") + " repet " + i)
+          optimizers.foreach { case o => res.append(o.optimize(currentProblem)) }
+        }
+        k=k+1
       }
+      //println("Number of evaluations : "+currentProblem.evaluations+" ; best fval = "+res.takeRight(nBootstraps*optimizers.length).map{_.values(0)(0)}.min)
+      //val pb = currentProblem.asInstanceOf[CocoProblem]
+      //println(pb.id+" : "+pb.coco.cocoProblemGetSmallestValuesOfInterest(pb.pointer).mkString(","))
+
       currentProblem = suite.getNextProblem
-      k=k+1
+      if(currentProblem.isEmpty) println("No more problems to solve")
     }
     res.toSeq
   }

@@ -12,6 +12,8 @@ case class CocoProblem (
                          lower_bounds: Vector[Double],
                          upper_bounds: Vector[Double],
                          id: String,
+                         fun: String,
+                         instance: Int,
                          name: String,
                          index: Long,
                          isEmpty: Boolean
@@ -25,6 +27,8 @@ case class CocoProblem (
 
   override def problemName: String = name
 
+  override def evaluations: Int = coco.cocoProblemGetEvaluations(pointer).toInt
+
 }
 
 
@@ -33,7 +37,7 @@ case class CocoProblem (
 object CocoProblem {
 
 
-  val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0,true)
+  val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0,"empty",0,true)
 
   /**
     * Constructs the problem from the pointer.
@@ -52,6 +56,8 @@ object CocoProblem {
         coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
         coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
         coco.cocoProblemGetId(pointer),
+        coco.cocoProblemGetId(pointer).split("_")(1).replace("0",""),
+        coco.cocoProblemGetId(pointer).split("_")(2).replace("i","").toInt,
         coco.cocoProblemGetName(pointer),
         coco.cocoProblemGetIndex(pointer),
         false

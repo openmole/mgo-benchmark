@@ -13,7 +13,10 @@ case class FitnessProblem(
                            isEmpty: Boolean
                          ) extends Problem {
   override def evaluateFunction(x: Vector[Double]): Vector[Double] = fitness(x)
+
   override def problemName: String = "FitnessProblem("+fitness.toString+")"
+
+  override def evaluations: Int = 0
 }
 
 
