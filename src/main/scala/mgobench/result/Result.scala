@@ -2,6 +2,7 @@ package mgobench.result
 
 import mgobench.optimize.{Optimization, RandomSearch}
 import mgobench.problem.Problem
+import mgobench.problem.coco.CocoProblem
 
 
 /**
@@ -19,8 +20,18 @@ case class Result(
                     * Total number of function evaluations
                     */
                   runs: Int,
+
+                  /**
+                    * Corresponding problem
+                    */
                   problem: Problem,
-                  optimizer: Optimization
+
+                  /**
+                    * Optimizer
+                    */
+                  optimizer: Optimization,
+
+                  id: String
                  ) {
 
   /**
@@ -35,7 +46,25 @@ case class Result(
 
 object Result {
 
-  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem,new RandomSearch(0,0,0))
+  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem,new RandomSearch(0,0,0),"empty")
+
+
+  /**
+    * Constructor for coco problems
+    * @param points
+    * @param values
+    * @param runs
+    * @param problem
+    * @param optimizer
+    * @return
+    */
+  def apply(points: Vector[Vector[Double]],values: Vector[Vector[Double]],runs: Int,problem: Problem,optimizer: Optimization): Result = {
+    Result(
+      points,values,Vector.empty,runs,problem,optimizer,
+      problem.asInstanceOf[CocoProblem].fun+"_"+problem.asInstanceOf[CocoProblem].instance+"_"+problem.dimension+"_"+optimizer.name
+    )
+  }
+
 
   /**
     * Get the Pareto front corresponding to a result

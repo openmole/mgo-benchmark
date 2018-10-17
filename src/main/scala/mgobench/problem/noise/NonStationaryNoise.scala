@@ -19,6 +19,8 @@ case class NonStationaryNoise(
 
   override def noise(x: Vector[Double]): Vector[Double] = Vector.fill(dimension)(0.0)
 
+  override def noiseName: String = "NonStationaryNoise"
+
 }
 
 

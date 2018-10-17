@@ -1,6 +1,7 @@
 package mgobench.problem.coco
 
 import mgobench.optimize.Optimization
+import mgobench.problem.noise.Noise
 import mgobench.problem.{Problem, Suite}
 import mgobench.utils.CocoJNI
 
@@ -14,6 +15,15 @@ case class CocoSuite(
 
   override def reinitialize: Suite = CocoSuite.getSuite(name)
 
+}
+
+case class NoisyCocoSuite(
+                         cocoSuite: CocoSuite,
+                         noise: Noise
+                         ) extends Suite {
+  override def getNextProblem: Problem = NoisyCocoProblem(CocoSuite.getNextProblem(cocoSuite),noise)
+
+  override def reinitialize: Suite = NoisyCocoSuite(CocoSuite.getSuite(cocoSuite.name),noise)
 }
 
 

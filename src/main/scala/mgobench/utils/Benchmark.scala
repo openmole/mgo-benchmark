@@ -14,8 +14,8 @@ object benchmark {
     * @param fitness
     * @return
     */
-  def paretoFront(points : Vector[Vector[Double]],fitness : Vector[Double]=>Vector[Double]): Vector[Individual] = {
-    val population = points.map{x => DeterministicIndividual.buildIndividual(buildGenome(x, None, Vector.empty, None), fitness(x))}
+  def paretoFront(points : Vector[Vector[Double]],fitnessValues : Vector[Vector[Double]]): Vector[Individual] = {
+    val population = points.zip(fitnessValues).map{case (x,f) => DeterministicIndividual.buildIndividual(buildGenome(x, None, Vector.empty, None), f)}
     //println(population)
     keepFirstFront(population, vectorFitness.get)
   }

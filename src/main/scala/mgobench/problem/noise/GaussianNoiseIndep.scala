@@ -1,5 +1,7 @@
 package mgobench.problem.noise
 
+import scala.util.Random
+
 /**
   * Multi-dimensional gaussian noise
   * (independent)
@@ -7,13 +9,14 @@ package mgobench.problem.noise
   * @param mu
   * @param sigma
   */
-case class GaussianNoiseIndep(mu : Vector[Double],sigma : Vector[Double], seed: Int) extends Noise {
+case class GaussianNoiseIndep(mu : Vector[Double],sigma : Vector[Double], rng: Random) extends Noise {
   def noise(x : Vector[Double]) : Vector[Double] = {
-    val rng = new util.Random(seed)
     (mu zip sigma).map {
       case (m,s) => s*rng.nextGaussian() + m
     }
   }
+
+  override def noiseName: String = "Gaussian"
 }
 
 object GaussianNoiseIndep {

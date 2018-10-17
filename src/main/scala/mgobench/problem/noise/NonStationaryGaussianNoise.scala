@@ -7,6 +7,8 @@ case class NonStationaryGaussianNoise(
                                      ) extends Noise {
   override def noise(x: Vector[Double]): Vector[Double] = NonStationaryGaussianNoise.noise(x,this)(new scala.util.Random)
 
+  override def noiseName: String = "NonStationaryGaussian"
+
 }
 
 object NonStationaryGaussianNoise  {
@@ -27,7 +29,7 @@ object NonStationaryGaussianNoise  {
 
   def noise(x : Vector[Double],noise : NonStationaryGaussianNoise)(implicit rng : util.Random) : Vector[Double] = {
     val params = getParams(noise)
-    val gaussianNoise = GaussianNoiseIndep(params._1,params._2,0)
+    val gaussianNoise = GaussianNoiseIndep(params._1,params._2,rng)
     gaussianNoise.noise(x)
   }
 

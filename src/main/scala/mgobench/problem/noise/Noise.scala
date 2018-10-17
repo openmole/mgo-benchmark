@@ -9,4 +9,6 @@ trait Noise {
     */
   def noise(x : Vector[Double]) : Vector[Double]
 
+  def noiseName: String
+
 }

@@ -1,16 +1,31 @@
 import mgobench.optimize._
-import mgobench.problem.coco.{CocoSolutions, CocoSuite}
+//import mgobench.optimize.ga.NSGA2
+import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite}
 import mgobench.result.Indicators
 
+import scala.util.Random
 
 package object mgobench {
 
 
-  def resultExtraction(): Unit = {
-    //mgobench.problem.coco.CocoSolutions.testResultExtraction()
-    mgobench.problem.coco.CocoSolutions.runResultExtraction()
+  def testBenchmark(): Unit = {
+    val iterations = 100
+    val res = Benchmark.benchmark(Seq(
+      GradientDescent(iterations,tolerance = 1e-5),
+      //mgobench.optimize.RandomSearch(iterations),
+      NoisyGradientDescent(iterations,1,1000,1e-5,new Random),
+      mgobench.optimize.ga.NSGA2(100,20,1,10000,new Random)
+    ),
+      nBootstraps = 10,CocoSuite.getSuite("bbob"),problemsNumber = 5,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
+    val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
+    println(res.groupBy(_.id).map {
+      case (k,results) =>
+      //println("Expected runtimes for "+k+" : " + Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.1, hist), results.toVector))
+        k+" : " + Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.1, hist), results.toVector)
+    }.toList.sorted.mkString("\n"))
   }
-
 
 
   def testGradientDescent(): Unit = {
@@ -18,7 +33,9 @@ package object mgobench {
 
     //Suite.testSuiteOptim("bbob",GradientDescent(iterations))
     val res = Benchmark.benchmark(Seq(GradientDescent(iterations,tolerance = 1e-15)),
-      nBootstraps = 1,CocoSuite.getSuite("bbob"),problemsNumber = 5*24*3)
+      nBootstraps = 1,CocoSuite.getSuite("bbob"),problemsNumber = 5*24*3,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
     //println(res)
     val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
     println(Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.001,hist),res.toVector))
@@ -42,6 +59,11 @@ package object mgobench {
     //println(deterministic.mkString("\n"))
     //println(deterministic)
     //println(Rosenbrock.counter)
+  }
+
+  def resultExtraction(): Unit = {
+    //mgobench.problem.coco.CocoSolutions.testResultExtraction()
+    mgobench.problem.coco.CocoSolutions.runResultExtraction()
   }
 
   def testCocoIntegration(): Unit = {

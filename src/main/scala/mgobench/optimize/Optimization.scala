@@ -13,6 +13,8 @@ trait Optimization {
 
   def optimize(problem: Problem) : Result
 
+  def name: String
+
 }
 
 

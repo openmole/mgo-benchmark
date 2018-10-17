@@ -3,6 +3,7 @@ package mgobench.result
 import mgobench.optimize.Optimization
 import mgobench.problem.Problem
 import mgobench.problem.coco.{CocoProblem, HistoricalSolution}
+import sun.security.util.PropertyExpander.ExpandException
 
 
 
@@ -35,7 +36,7 @@ object Indicators {
     * @param epsilon
     * @return
     */
-  def historicalSolutionSuccess(epsilon: Double,hist: scala.collection.Map[(String,Int),HistoricalSolution]): Result => Boolean = {
+  def historicalSolutionSuccess(epsilon: Double,hist: scala.collection.Map[(String,Int),HistoricalSolution]): Result => (Boolean,Double,Double) = {
     result => {
       val pb = result.problem.asInstanceOf[CocoProblem]
       val id = pb.id
@@ -43,10 +44,12 @@ object Indicators {
       val fitval = result.values(0)(0)
       val key = id.split("_")(1).replaceAll("0","")+"_"+id.split("_")(2).replaceAll("i","").toInt.toString
       val dim = result.problem.asInstanceOf[CocoProblem].dimension
-      val histfitval = if(hist.keySet.contains((key,dim))) hist((key,dim)).bestFitnesses(0)(0) else fitval//10000.0
+      assert(hist.keySet.contains((key,dim)),s"No historical solution for problem $key $dim")
+      val histfitval = hist((key,dim)).bestFitnesses(0)(0)
+      val histsol = hist((key,dim)).bestSolutions(0)
       // fail if no historical value ? -> ensure all solutions using an algo with numerous iterations / simulated annealing ?
       //println(id+" : "+histfitval+" - "+fitval+" : "+(math.abs(fitval - histfitval) < epsilon))
-      math.abs(fitval - histfitval) < epsilon
+      ((math.abs(fitval - histfitval) < epsilon),fitval,histfitval)//&&(math.sqrt(histsol.zip(result.points(0)).map{case (x1,x2) => math.pow(x1-x2,2.0)}.sum)<epsilon)
     }
   }
 
@@ -58,24 +61,35 @@ object Indicators {
     * @param results
     * @return
     */
-  def expectedIndicator(indic : Result => Double)(successCondition: Result => Boolean)(results : Vector[Result]): Double = {
-    val successes = results.map {case r => if (successCondition(r)){1.0} else {0.0}}
-    val unsucc = results.map {case r => if (successCondition(r)){0.0} else {1.0}}
-    println("successes = "+successes.sum+" ; fails = "+unsucc.sum)
+  def expectedIndicator(indic : Result => Double)(successCondition: Result => (Boolean,Double,Double))(results : Vector[Result]): ExpectedIndicator = {
+    val successes = results.map {case r => if (successCondition(r)._1){1.0} else {0.0}}
+    val unsucc = results.map {case r => if (successCondition(r)._1){0.0} else {1.0}}
+    //println("successes = "+successes.sum+" ; fails = "+unsucc.sum)
     //println(results.map(indic))
+    val hist = results.map(successCondition).map(_._3).min
+    val best = results.map(successCondition).map(_._2).min
     val ps = successes.sum / results.size
-    if(ps > 0.0&&unsucc.sum > 0.0) {
-      successes.zip(results).map { case (s, r) => s * indic(r) }.sum / successes.sum + (1 - ps) * (unsucc.zip(results).map { case (s, r) => s * indic(r) }.sum / unsucc.sum) / ps
-    }else{
-      0.0
+    (ps,unsucc.sum ) match {
+      case (ps,u) if ps > 0.0&&u > 0.0 => {
+      val value = successes.zip(results).map { case (s, r) => s * indic(r) }.sum / successes.sum + (1 - ps) * (unsucc.zip(results).map { case (s, r) => s * indic(r) }.sum / unsucc.sum) / ps
+      ExpectedIndicator(value,best,hist,successes.sum.toInt,unsucc.sum.toInt,indic.toString)
     }
+      case (ps,u) if ps > 0.0&&u == 0.0 => {
+        ExpectedIndicator(successes.zip(results).map { case (s, r) => s * indic(r) }.sum / successes.sum,best,hist,successes.sum.toInt,unsucc.sum.toInt,indic.toString)
+      }
+      case _ => ExpectedIndicator(Double.PositiveInfinity,best,hist,successes.sum.toInt,unsucc.sum.toInt,indic.toString)
     }
+  }
 
-  def expectedRunTime(successCondition: Result => Boolean,results : Vector[Result]): Double =
+  def expectedRunTime(successCondition: Result => (Boolean,Double,Double),results : Vector[Result]): ExpectedIndicator =
     expectedIndicator(_.runs)(successCondition)(results)
 
-  def expectedPrecision(successCondition: Result => Boolean,results : Vector[Result]): Double =
+  def expectedPrecision(successCondition: Result => (Boolean,Double,Double),results : Vector[Result]): ExpectedIndicator =
     expectedIndicator(_.precision)(successCondition)(results)
+
+
+  case class ExpectedIndicator(value: Double,best: Double,hist: Double,successes: Int,failures: Double,name: String)
+
 
 }
 

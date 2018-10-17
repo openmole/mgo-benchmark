@@ -7,6 +7,7 @@ package mgobench.optimize
 import breeze.linalg.DenseVector
 import breeze.optimize.{ApproximateGradientFunction, DiffFunction, LBFGS}
 import mgobench.problem.Problem
+import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
 
 
@@ -28,11 +29,15 @@ case class GradientDescent (
 
                              m: Int = 7,
 
-                             tolerance: Double = 1e-5
+                             tolerance: Double = 1e-5,
+
+                             x0: (Problem => Array[Double]) = {problem => problem.boundaries.map{case c => (c.low + c.high)/2}.toArray}
 
                            ) extends Optimization {
 
   override def optimize(problem: Problem): Result = GradientDescent.optimize(this,problem)
+
+  override def name: String = "GD-"+iterations+"-"+stochastic_iterations+"-"+tolerance
 
 }
 
@@ -44,11 +49,25 @@ object GradientDescent {
     */
   val default: GradientDescent = GradientDescent(10000)
 
+  /**
+    *
+    * @param f
+    * @param n
+    * @param epsilon
+    */
   class StochasticApproximateGradient(f: DenseVector[Double]=>Double, n : Int, epsilon: Double) extends DiffFunction[DenseVector[Double]] {
     override def valueAt(x: DenseVector[Double]) = f(x)
 
+    /**
+      * Gradient operator
+      */
     val gradient = new ApproximateGradientFunction(f)
 
+    /**
+      * Estimate the gradient with average
+      * @param x
+      * @return
+      */
     def calculate(x: DenseVector[Double]): (Double, DenseVector[Double]) = {
       val grads = (1 to n by 1).map{_ => gradient.calculate(x)}
       (grads.map(_._1).sum / n,grads(0)._2)
@@ -80,16 +99,15 @@ object GradientDescent {
     val lbfgs = new LBFGS[DenseVector[Double]](maxIter=gradientDescent.iterations, m=gradientDescent.m,tolerance=gradientDescent.tolerance)
 
     //val res = lbfgs.minimize(gradient,new DenseVector(gradientDescent.x0.toArray))
-    val minstate = lbfgs.minimizeAndReturnState(gradient,new DenseVector(problem.boundaries.map{case c => (c.low + c.high)/2}.toArray))
+    val minstate = lbfgs.minimizeAndReturnState(gradient,new DenseVector(gradientDescent.x0(problem)))
 
     //println(minstate.adjustedGradient.map{_.abs}.sum)
 
     Result(
       points = Vector(minstate.x.toScalaVector()),
-      values =Vector(problem.fitness(minstate.x.toScalaVector())),
-      precisions = Vector(Vector.fill(problem.number_of_objectives)(0.0)),
-      runs = problem.evaluations - prevevals,//minstate.iter,
-      problem = problem,
+      values = Vector(problem.fitness(minstate.x.toScalaVector())),
+      runs = problem.evaluations - prevevals,
+      problem = problem.asInstanceOf[CocoProblem],
       optimizer = gradientDescent
     )
   }

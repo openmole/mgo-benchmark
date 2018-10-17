@@ -27,12 +27,12 @@ object Benchmark {
     * @param suite
     * @return Everything flatten (problem and optimizer stored in Result)
     */
-  def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 1): Seq[Result] = {
+  def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 1,problemFilter: Problem=>Boolean = {_=>true}): Seq[Result] = {
     var currentProblem = suite.getNextProblem
     val res = new ArrayBuffer[Result]
     var k = 0
     while(!currentProblem.isEmpty&&k<problemsNumber){
-      if(currentProblem.asInstanceOf[CocoProblem].instance <= 5) {
+      if(problemFilter(currentProblem)) {
         (0 until nBootstraps).foreach { case i =>
           println("Solving problem " + currentProblem.toString + " with " + optimizers.size + " optimizers (" + optimizers.mkString(";") + " repet " + i)
           optimizers.foreach { case o => res.append(o.optimize(currentProblem)) }

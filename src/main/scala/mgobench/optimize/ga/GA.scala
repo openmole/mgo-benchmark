@@ -3,11 +3,14 @@ package mgobench.optimize.ga
 import mgo._
 import mgo.contexts._
 import freedsl.dsl._
-import NSGA2.{Result, _}
+import NSGA2.{NSGA2Instance, Result}
+import mgo.algorithm.CDGenome.DeterministicIndividual._
+import mgo.algorithm.CDGenome.Genome
 import mgo.algorithm.CDGenome.NoisyIndividual.Individual
-import mgo.algorithm.EvolutionState
-
+import mgo.algorithm.{Algorithm, EvolutionState, deterministic}
 import mgobench.result._
+
+import scala.util.Random
 
 
 object replication {
@@ -20,7 +23,9 @@ object replication {
   def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]): Vector[mgobench.result.Result] = {
     val rng = new util.Random(seed)
 
-    val nsga2 = NSGA2(
+    import NSGA2._
+
+    val nsga2 = NSGA2Instance(
       mu = 100,
       lambda = 20,
       //fitness = x => Vector(Rastrigin.rastrigin(x) + GaussianNoise(rng)(mu = 0.0,sigma = 0.0)),
@@ -40,6 +45,7 @@ object replication {
     )
     */
 
+    /*
     def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] =
       nsga2.
         until(afterGeneration(10000)).
@@ -66,7 +72,27 @@ object replication {
     def nsga2ResultToResult(nr: NSGA2.Result): mgobench.result.Result = mgobench.result.Result.empty
 
     NSGA2.result(nsga2, finalPopulation).map(nsga2ResultToResult)
+
+
+    Vector.empty
   }
+
+  implicit def isAlgorithm[M[_]: Generation: Random: cats.Monad: StartTime]: Algorithm[NSGA2Instance, M, Individual, Genome, EvolutionState[Unit]] =
+    new Algorithm[NSGA2Instance, M, Individual, Genome, EvolutionState[Unit]] {
+      override def initialPopulation(t: NSGA2Instance) =
+        deterministic.initialPopulation[M, Genome, Individual](
+          NSGA2.initialGenomes[M](t.lambda, t.continuous),
+          NSGA2.expression(t.fitness, t.continuous))
+      override def step(t: NSGA2Instance) =
+        deterministic.step[M, Individual, Genome](
+          NSGA2.breeding[M](t.lambda),
+          NSGA2.expression(t.fitness, t.continuous),
+          NSGA2.elitism(t.mu, t.continuous))
+      override def state = NSGA2.state[M]
+
+  */
+    Vector.empty
+    }
 
 
 }
