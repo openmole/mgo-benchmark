@@ -19,23 +19,22 @@ resolvers += Resolver.mavenCentral
 //resolvers += "BeDataDriven" at "https://nexus.bedatadriven.com/content/groups/public"
 
 libraryDependencies += "fr.iscpif" %% "mgo" % "3.8-SNAPSHOT"
+libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"
+libraryDependencies += "org" %% "akka-multiswarm" % "0.1-SNAPSHOT"
+
 
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "2.10.4"
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "1.2.4"
-
 //libraryDependencies += "org.scalanlp" % "breeze_2.10" % "0.12" exclude("com.chuusai", "shapeless_2.10.4")
-libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"
-
 //libraryDependencies += "org.jzy3d" % "jzy3d-api" % "0.9.1"
-
 //libraryDependencies += "org.renjin" % "renjin-script-engine" % "0.9.2643"
-
 //libraryDependencies += "com.github.transcendent-ai-labs.DynaML" % "dynaml-core_2.11" % "v1.5.3-beta.2"
-
 //libraryDependencies += "net.cilib" % "cilib_2.11" % "2.0.0-M1"
 
 //javaOptions += "-Djava.library.path="+sys.env.get("CS_HOME")+"/NoisyEA/Models/mgo-benchmark/lib/coco/build"
 javaOptions += "-Djava.library.path=/Users/juste/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
 //scalacOptions += "-cp ."
+
+mainClass in (Compile, run) := Some("mgobench.Run")
 
 fork := true

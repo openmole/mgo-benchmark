@@ -1,30 +1,46 @@
 import mgobench.optimize._
+import mgobench.optimize.pso.BasicPSO
 //import mgobench.optimize.ga.NSGA2
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite}
-import mgobench.result.Indicators
+import mgobench.result.{Indicators, Result}
 
 import scala.util.Random
 
 package object mgobench {
 
 
+
   def testBenchmark(): Unit = {
     val iterations = 100
-    val res = Benchmark.benchmark(Seq(
-      GradientDescent(iterations,tolerance = 1e-5),
-      //mgobench.optimize.RandomSearch(iterations),
-      NoisyGradientDescent(iterations,1,1000,1e-5,new Random),
-      mgobench.optimize.ga.NSGA2(100,20,1,10000,new Random)
-    ),
-      nBootstraps = 10,CocoSuite.getSuite("bbob"),problemsNumber = 5,
+    val res: Seq[Result] = Benchmark.benchmark(
+      optimizers = Seq(
+        mgobench.optimize.RandomSearch(iterations),
+        GradientDescent(iterations,tolerance = 1e-5),
+        NoisyGradientDescent(iterations,1,1000,1e-5,new Random),
+        mgobench.optimize.ga.NSGA2(100,20,1,10000,new Random)
+      ),
+      nBootstraps = 2,
+      suite = CocoSuite.getSuite("bbob"),
+      problemsNumber = 1,
       problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
     )
-    val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
-    println(res.groupBy(_.id).map {
-      case (k,results) =>
-      //println("Expected runtimes for "+k+" : " + Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.1, hist), results.toVector))
-        k+" : " + Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.1, hist), results.toVector)
-    }.toList.sorted.mkString("\n"))
+
+    utils.io.File.writeCSV(Indicators.computeExpectedIndicators(res),"res/test/test.csv",";")
+
+  }
+
+
+  def testPSO(): Unit = {
+    val iterations = 10
+    val res: Seq[Result] = Benchmark.benchmark(
+      optimizers = Seq(
+        BasicPSO(iterations,10)
+      ),
+      nBootstraps = 2,
+      suite = CocoSuite.getSuite("bbob"),
+      problemsNumber = 1,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
   }
 
 

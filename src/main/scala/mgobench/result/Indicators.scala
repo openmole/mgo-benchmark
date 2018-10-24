@@ -2,7 +2,7 @@ package mgobench.result
 
 import mgobench.optimize.Optimization
 import mgobench.problem.Problem
-import mgobench.problem.coco.{CocoProblem, HistoricalSolution}
+import mgobench.problem.coco.{CocoProblem, CocoSolutions, HistoricalSolution}
 import sun.security.util.PropertyExpander.ExpandException
 
 
@@ -89,6 +89,16 @@ object Indicators {
 
 
   case class ExpectedIndicator(value: Double,best: Double,hist: Double,successes: Int,failures: Double,name: String)
+
+  def computeExpectedIndicators(res: Seq[Result],historicalResultsFile: String = "data/historicalresults.csv"):Array[Array[Any]] = {
+    val hist = CocoSolutions.loadSolutions(historicalResultsFile)
+    res.groupBy(_.id).map {
+      case (k,results) =>
+        //println("Expected runtimes for "+k+" : " + Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.1, hist), results.toVector))
+        Array(k,expectedRunTime(historicalSolutionSuccess(0.1, hist), results.toVector).value,expectedPrecision(historicalSolutionSuccess(0.1, hist), results.toVector).value)
+    }.toArray
+      //.toList.sorted.mkString("\n")
+  }
 
 
 }

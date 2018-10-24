@@ -72,6 +72,8 @@ object NSGA2 {
 
   object NSGA2Instance {
 
+    def aggreg(x1: Vector[Double],x2: Vector[Double]): Vector[Double] = x1.zip(x2).map{case (x,y) => x+y}
+
     /**
       * Random aggregation is done in the instance fitness
       * @param nsga2
@@ -82,7 +84,7 @@ object NSGA2 {
       NSGA2Instance(
         nsga2.mu,nsga2.lambda,
         problem.boundaries,
-        x => (1 to nsga2.nrepets).map{_=>problem.fitness(x)}.reduce{(f:(Vector[Double],Vector[Double])) => f match{case f : (Vector[Double],Vector[Double]) => f._1.zip(f._2).map{case x: (Double,Double)=>x._1+x._2}}}.map{_/nsga2.nrepets}
+        x => (1 to nsga2.nrepets).map{_=>problem.fitness(x)}.reduce(aggreg).map{_/nsga2.nrepets}
       )
     }
   }

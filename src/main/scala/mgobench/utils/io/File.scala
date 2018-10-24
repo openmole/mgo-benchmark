@@ -12,7 +12,7 @@ object File {
     * @param file
     * @param delimiter
     */
-  def writeCSV(d: Array[Array[String]],file: String,delimiter: String): Unit = {
+  def writeCSV[T <: Any](d: Array[Array[T]],file: String,delimiter: String): Unit = {
     val writer = new BufferedWriter(new FileWriter(new File(file)))
     d.foreach{case r => writer.write(r.mkString(delimiter));writer.newLine()}
     writer.close()
