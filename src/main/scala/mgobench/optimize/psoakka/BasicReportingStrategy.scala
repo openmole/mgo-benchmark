@@ -1,4 +1,4 @@
-package mgobench.optimize.pso
+package mgobench.optimize.psoakka
 
 import akka.actor.ActorRef
 import com.hungrylearner.pso.swarm.{ParentReporter, PeriodicLocalReporting}

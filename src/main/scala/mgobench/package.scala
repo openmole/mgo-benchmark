@@ -1,5 +1,5 @@
 import mgobench.optimize._
-import mgobench.optimize.pso.BasicPSO
+import mgobench.optimize.psoakka.BasicPSOAkka
 //import mgobench.optimize.ga.NSGA2
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite}
 import mgobench.result.{Indicators, Result}
@@ -34,7 +34,7 @@ package object mgobench {
     val iterations = 10
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        BasicPSO(iterations,10)
+        BasicPSOAkka(iterations,10)
       ),
       nBootstraps = 2,
       suite = CocoSuite.getSuite("bbob"),

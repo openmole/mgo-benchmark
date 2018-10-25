@@ -1,4 +1,4 @@
-package mgobench.optimize.pso
+package mgobench.optimize.psoakka
 
 import akka.actor.ActorContext
 import akka.event.{Logging, LoggingAdapter}

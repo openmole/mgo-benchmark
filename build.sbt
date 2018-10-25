@@ -20,7 +20,8 @@ resolvers += Resolver.mavenCentral
 
 libraryDependencies += "fr.iscpif" %% "mgo" % "3.8-SNAPSHOT"
 libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"
-libraryDependencies += "org" %% "akka-multiswarm" % "0.1-SNAPSHOT"
+libraryDependencies += "org" %% "akka-multiswarm" % "0.1-SNAPSHOT" // locally published lib
+libraryDependencies += "net.cilib" %% "cilib-core" % "2.0.1"
 
 
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "2.10.4"

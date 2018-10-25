@@ -3,6 +3,8 @@ package mgobench.problem.coco
 import mgobench.problem.Problem
 import mgobench.utils.CocoJNI
 
+import java.util.concurrent.locks.ReentrantLock
+
 case class CocoProblem (
                          pointer: Long, // Pointer to the coco_problem_t object
                          coco: CocoJNI,
@@ -18,12 +20,13 @@ case class CocoProblem (
                          index: Long,
                          isEmpty: Boolean
                        ) extends Problem {
+
   /**
     * evaluate the problem
     */
   override def evaluateFunction(x: Vector[Double]): Vector[Double] = fitness(x)
 
-  override def fitness: Vector[Double] => Vector[Double] = CocoProblem.evaluateFunction(coco,this)
+  override def fitness: Vector[Double] => Vector[Double] = {CocoProblem.evaluateFunction(coco,this)}
 
   override def problemName: String = name
 
@@ -38,6 +41,8 @@ object CocoProblem {
 
 
   val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0,"empty",0,true)
+
+  val evaluationLock: ReentrantLock = new ReentrantLock
 
   /**
     * Constructs the problem from the pointer.
@@ -73,9 +78,24 @@ object CocoProblem {
     * @return the result of the function evaluation in point x
     */
   def evaluateFunction(coco:CocoJNI,problem: CocoProblem)(x : Vector[Double]) : Vector[Double] = {
+    println(s"Evaluating problem ${problem.asInstanceOf[AnyRef].toString} at x = ${x}")
     //println(x.toArray.toString)
     //println(coco.cocoEvaluateFunction(problem.pointer, x.toArray).toString)
-    coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+    //  add locking here
+    println("Locking "+evaluationLock.toString)
+    while(evaluationLock.isLocked) {
+      println("locked");
+      java.lang.Thread.sleep(100)
+    }
+    if (!evaluationLock.isLocked) {
+      evaluationLock.lock()
+      val res = coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+      println("Unlocking " + evaluationLock.toString)
+      evaluationLock.unlock()
+
+      return(res)
+    }
+    Vector.empty
   }
 
   //override def evaluateFunction()
@@ -86,9 +106,9 @@ object CocoProblem {
     * @param x
     * @return the result of the constraint evaluation in point x
     */
-  def evaluateConstraint(coco:CocoJNI,problem: CocoProblem,x: Vector[Double]): Vector[Double] = {
+  /*def evaluateConstraint(coco:CocoJNI,problem: CocoProblem,x: Vector[Double]): Vector[Double] = {
     coco.cocoEvaluateConstraint(problem.pointer, x.toArray).to[Vector]
-  }
+  }*/
 
 
 
@@ -114,7 +134,10 @@ object CocoProblem {
     * @return
     */
   def getEvaluations(coco:CocoJNI,problem: CocoProblem): Long = {
-    coco.cocoProblemGetEvaluations(problem.pointer)
+    evaluationLock.lock()
+    val evals = coco.cocoProblemGetEvaluations(problem.pointer)
+    evaluationLock.unlock()
+    evals
   }
 
   /*

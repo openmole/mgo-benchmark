@@ -1,4 +1,4 @@
-package mgobench.optimize.pso
+package mgobench.optimize.psoakka
 
 import breeze.linalg.sum
 import breeze.numerics.abs

@@ -1,4 +1,4 @@
-package mgobench.optimize.pso
+package mgobench.optimize.psoakka
 
 import akka.actor._
 import akka.event.{Logging, LoggingAdapter}
@@ -16,25 +16,45 @@ import mgobench.result.Result
 
 
 
-case class BasicPSO(
+
+/**
+  * WARNING : this particle swarm does not work with CocoProblem (coco suite is not parallelized - locking fails)
+  *
+  * @param iterations
+  * @param particles
+  */
+case class BasicPSOAkka(
                      iterations: Int,
                      particles: Int
                    ) extends Optimization {
 
-  override def optimize(problem: Problem): Result = BasicPSO.optimize(this,problem)
+  override def optimize(problem: Problem): Result = BasicPSOAkka.optimize(this,problem)
 
-  override def name: String = "BasicPSO-"+iterations
+  override def name: String = "BasicPSOAkka-"+iterations+"-"+particles
 
 }
 
 
 
-object BasicPSO {
+object BasicPSOAkka {
 
 
-  def optimize(basicPSO: BasicPSO,problem: Problem): Result = {
+  /**
+    * Global shared problem
+    * FIXME cannot work as BasicPSO object is created independantly of a Problem
+    *  -> cannot ensure consistent concurrent access to cocoJNI here ?
+    */
+  var currentProblem = Problem.emptyProblem
 
-    val system = ActorSystem("simulation")
+  /**
+    * does not solve the problem in argument but the shared global problem, so the lock with Coco_evaluate actually works
+    * @param basicPSO
+    * @param problem
+    * @return
+    */
+  def optimize(basicPSO: BasicPSOAkka, problem: Problem): Result = {
+
+    val system = ActorSystem("basic-pso")
     //private val Logger = Logging.getLogger(system, this)
     //Logger.debug( "Simulation begin")
 
@@ -56,7 +76,8 @@ object BasicPSO {
     val positionDimension = 1     // The number of items in a position vector.
     val positionBounds = Array[(Double,Double)]( (0,100), (0,10))
     val particleSpaceContext = ParticleSpaceDVD.ParticleSpaceContext(
-      initialPosition = (dim: Int, particleIndex: Int) => new ParticlePosition( DenseVector.tabulate[Double]( dim) (i => boundedRandom( positionBounds(i))), positionBounds,fitness),
+      initialPosition = (dim: Int, particleIndex: Int) => new ParticlePosition(
+        DenseVector.tabulate[Double]( dim) (i => boundedRandom( positionBounds(i))), positionBounds,fitness),
       positionBounds,
       initialHistory = (dim: Int) => DenseVector.fill[Double]( dim) (0.0)
     )
@@ -80,7 +101,8 @@ object BasicPSO {
 
     val particleCount = particles
     val simulationContext = SimulationContext( iterations, system)
-    def makeParticle( swarmIndex: Int, particleIndex: Int, particleCount: Int) = new ParticleDVD(simulationContext,  particleContext, particleIndex)
+    def makeParticle( swarmIndex: Int, particleIndex: Int, particleCount: Int) = new ParticleDVD(
+      simulationContext,  particleContext, particleIndex)
 
     new LocalSwarmConfig[Double,PositionVector]( particleCount, makeParticle, simulationContext)
   }
@@ -121,7 +143,7 @@ object BasicPSO {
     }
 
     def initializePso = {
-      log.debug( "Simulation.initializePso")
+      log.debug( "BasicPSOSimulator.initializePso")
 
       if( swarm == null) {
         val swarmConfig = makeLocalSwarmConfig( iterations,particles, context.system,fitness)
@@ -144,6 +166,12 @@ object BasicPSO {
                   iteration: Int,
                   progress: Progress,
                   terminateCriteriaStatus: TerminateCriteriaStatus) = {
+
+      if(iteration == iterations) {
+        swarm ! PoisonPill
+        self ! PoisonPill
+      }
+
 
       evaluatedPosition match {
         case EvaluatedPosition( position: ParticlePosition, isBest: Boolean) =>
