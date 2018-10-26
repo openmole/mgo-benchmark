@@ -5,6 +5,8 @@ import mgobench.utils.CocoJNI
 
 import java.util.concurrent.locks.ReentrantLock
 
+import scala.util.Random
+
 case class CocoProblem (
                          pointer: Long, // Pointer to the coco_problem_t object
                          coco: CocoJNI,
@@ -42,7 +44,7 @@ object CocoProblem {
 
   val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0,"empty",0,true)
 
-  val evaluationLock: ReentrantLock = new ReentrantLock
+  //val evaluationLock: ReentrantLock = new ReentrantLock
 
   /**
     * Constructs the problem from the pointer.
@@ -52,21 +54,33 @@ object CocoProblem {
   def apply(coco: CocoJNI,pointer: Long) : CocoProblem = {
     if(pointer == 0) return emptyProblem
     else {
-      return new CocoProblem(
-        pointer,
-        coco,
-        coco.cocoProblemGetDimension(pointer),
-        coco.cocoProblemGetNumberOfObjectives(pointer),
-        coco.cocoProblemGetNumberOfConstraints(pointer),
-        coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
-        coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
-        coco.cocoProblemGetId(pointer),
-        coco.cocoProblemGetId(pointer).split("_")(1).replace("0",""),
-        coco.cocoProblemGetId(pointer).split("_")(2).replace("i","").toInt,
-        coco.cocoProblemGetName(pointer),
-        coco.cocoProblemGetIndex(pointer),
-        false
-      )
+      /*while(evaluationLock.isLocked) {
+        println("locked");
+        java.lang.Thread.sleep(100)
+      }
+      evaluationLock.lock()
+      */
+
+      //this.synchronized {
+
+      val res = new CocoProblem(
+          pointer,
+          coco,
+          coco.cocoProblemGetDimension(pointer),
+          coco.cocoProblemGetNumberOfObjectives(pointer),
+          coco.cocoProblemGetNumberOfConstraints(pointer),
+          coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
+          coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
+          coco.cocoProblemGetId(pointer),
+          coco.cocoProblemGetId(pointer).split("_")(1).replace("0", ""),
+          coco.cocoProblemGetId(pointer).split("_")(2).replace("i", "").toInt,
+          coco.cocoProblemGetName(pointer),
+          coco.cocoProblemGetIndex(pointer),
+          false
+        )
+        //evaluationLock.unlock()
+        res
+      //}
     }
   }
 
@@ -78,24 +92,33 @@ object CocoProblem {
     * @return the result of the function evaluation in point x
     */
   def evaluateFunction(coco:CocoJNI,problem: CocoProblem)(x : Vector[Double]) : Vector[Double] = {
-    println(s"Evaluating problem ${problem.asInstanceOf[AnyRef].toString} at x = ${x}")
-    //println(x.toArray.toString)
-    //println(coco.cocoEvaluateFunction(problem.pointer, x.toArray).toString)
-    //  add locking here
-    println("Locking "+evaluationLock.toString)
-    while(evaluationLock.isLocked) {
-      println("locked");
+    //println(s"Evaluating problem ${problem.asInstanceOf[AnyRef].toString} at x = ${x}")
+    //java.lang.Thread.sleep((new Random).nextInt(100))
+    //this.synchronized {
+      // Synchro DOES NOT WORK
+      //println(x.toArray.toString)
+      //println(coco.cocoEvaluateFunction(problem.pointer, x.toArray).toString)
+      //  add locking here
+      /*while(evaluationLock.isLocked) {
+      println("waiting for lock");
       java.lang.Thread.sleep(100)
     }
     if (!evaluationLock.isLocked) {
+      println(s"Locking ${evaluationLock.toString} locked ${evaluationLock.isLocked} at ${System.currentTimeMillis()}")
       evaluationLock.lock()
-      val res = coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
-      println("Unlocking " + evaluationLock.toString)
-      evaluationLock.unlock()
+      println(s"locked ${evaluationLock.toString} ${evaluationLock.isLocked} at ${System.currentTimeMillis()}")
+     */
+      //println(System.currentTimeMillis())
 
-      return(res)
-    }
-    Vector.empty
+    val res = coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+
+      /*println("Unlocking " + evaluationLock.toString)
+      evaluationLock.unlock()
+      */
+      return (res)
+      //  }
+      //  Vector.empty
+    //}
   }
 
   //override def evaluateFunction()
@@ -134,10 +157,13 @@ object CocoProblem {
     * @return
     */
   def getEvaluations(coco:CocoJNI,problem: CocoProblem): Long = {
-    evaluationLock.lock()
+    //evaluationLock.lock()
+    //this.synchronized {
     val evals = coco.cocoProblemGetEvaluations(problem.pointer)
-    evaluationLock.unlock()
+    //evaluationLock.unlock()
     evals
+
+    //}
   }
 
   /*

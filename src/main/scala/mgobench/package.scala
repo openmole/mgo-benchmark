@@ -1,4 +1,5 @@
 import mgobench.optimize._
+import mgobench.optimize.pso.{GCPSO, GlobalBestPSO}
 import mgobench.optimize.psoakka.BasicPSOAkka
 //import mgobench.optimize.ga.NSGA2
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite}
@@ -31,16 +32,20 @@ package object mgobench {
 
 
   def testPSO(): Unit = {
-    val iterations = 10
+    val iterations = 1000
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        BasicPSOAkka(iterations,10)
+        //BasicPSOAkka(iterations,10) // akka does not work with coco for parallelization
+        //GlobalBestPSO(iterations,200)
+        GCPSO(iterations,200)
       ),
-      nBootstraps = 2,
+      nBootstraps = 10,
       suite = CocoSuite.getSuite("bbob"),
-      problemsNumber = 1,
+      problemsNumber = 2,
       problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
     )
+    val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
+    println(Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.01,hist),res.toVector))
   }
 
 

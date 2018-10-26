@@ -14,6 +14,7 @@ import mgobench.optimize.{GradientDescent, Optimization}
 import mgobench.problem.Problem
 import mgobench.result.Result
 
+import scala.util.Random
 
 
 
@@ -101,8 +102,13 @@ object BasicPSOAkka {
 
     val particleCount = particles
     val simulationContext = SimulationContext( iterations, system)
-    def makeParticle( swarmIndex: Int, particleIndex: Int, particleCount: Int) = new ParticleDVD(
-      simulationContext,  particleContext, particleIndex)
+    def makeParticle( swarmIndex: Int, particleIndex: Int, particleCount: Int) = {
+      val sleepTime = (new Random).nextInt(100)
+      println(s"Particle $particleIndex sleeping $sleepTime")
+      java.lang.Thread.sleep(sleepTime)
+      new ParticleDVD(
+        simulationContext, particleContext, particleIndex)
+    }
 
     new LocalSwarmConfig[Double,PositionVector]( particleCount, makeParticle, simulationContext)
   }
