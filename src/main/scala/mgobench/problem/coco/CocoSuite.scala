@@ -17,14 +17,7 @@ case class CocoSuite(
 
 }
 
-case class NoisyCocoSuite(
-                         cocoSuite: CocoSuite,
-                         noise: Noise
-                         ) extends Suite {
-  override def getNextProblem: Problem = NoisyCocoProblem(CocoSuite.getNextProblem(cocoSuite),noise)
 
-  override def reinitialize: Suite = NoisyCocoSuite(CocoSuite.getSuite(cocoSuite.name),noise)
-}
 
 
 
@@ -63,6 +56,9 @@ object CocoSuite {
     //"instances: 10-20", "dimensions: 2,3,5,10,20 instance_indices:1-5")
     CocoSuite.apply(coco,name, "","")
   }
+
+
+
 
 
   /**

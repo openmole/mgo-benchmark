@@ -37,7 +37,7 @@ package object mgobench {
       optimizers = Seq(
         //BasicPSOAkka(iterations,10) // akka does not work with coco for parallelization
         //GlobalBestPSO(iterations,200)
-        GCPSO(iterations,200)
+        GCPSO(iterations,10)
       ),
       nBootstraps = 10,
       suite = CocoSuite.getSuite("bbob"),

@@ -62,7 +62,7 @@ case class GlobalBestPSO(
 
   override def optimize(problem: Problem): Result = GlobalBestPSO.optimize(globalBestPSO = this,problem)
 
-  override def name: String = "GlobalBestPSO-"+iterations+"-"+particles
+  override def name: String = "GBPSO-"+iterations+"-"+particles
 
 }
 

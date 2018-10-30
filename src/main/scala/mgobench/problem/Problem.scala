@@ -6,7 +6,7 @@ trait Problem {
 
   def dimension: Int
   def number_of_objectives: Int
-  def number_of_constraints: Int
+  //def number_of_constraints: Int
   def lower_bounds: Vector[Double]
   def upper_bounds: Vector[Double]
 

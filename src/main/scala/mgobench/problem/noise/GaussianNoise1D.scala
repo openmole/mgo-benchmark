@@ -11,3 +11,10 @@ case class GaussianNoise1D(mu : Double,sigma: Double, rng: Random) extends Noise
   override def noiseName: String = this.toString
 
 }
+
+
+object GaussianNoise1D {
+
+  def apply(mu: Double, sigma: Double, seed: Long): GaussianNoise1D = GaussianNoise1D(mu,sigma,new util.Random(seed = seed))
+
+}

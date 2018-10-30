@@ -29,7 +29,7 @@ object NoisyGradientDescent {
         problem.boundaries.map{case c => noisyGradientDescent.rng.nextDouble()*(c.high - c.low) + c.low}.toArray
       }
     )
-    val results = (1 to noisyGradientDescent.nsearchs).map{_=>GradientDescent.optimize(solver,problem)}
+    val results = (1 to math.max(1,noisyGradientDescent.nsearchs)).map{_=>GradientDescent.optimize(solver,problem)}
     //results.foreach{case r => println(r.values(0)(0))}
     val bestres = results.sortWith{case (r1,r2) => r1.values(0)(0) < r2.values(0)(0) }(0)
     Result(bestres.points,bestres.values,results.map(_.runs).sum,problem,noisyGradientDescent)

@@ -31,7 +31,8 @@ object Indicators {
   */
 
   /**
-    * Compare solution with best historical
+    * Compare solution with best historical - relative error |f - fh| / (|f| + |fh| / 2)
+    *
     *  - 1 obj only
     * @param epsilon
     * @return
@@ -49,7 +50,8 @@ object Indicators {
       val histsol = hist((key,dim)).bestSolutions(0)
       // fail if no historical value ? -> ensure all solutions using an algo with numerous iterations / simulated annealing ?
       //println(id+" : "+histfitval+" - "+fitval+" : "+(math.abs(fitval - histfitval) < epsilon))
-      ((math.abs(fitval - histfitval) < epsilon),fitval,histfitval)//&&(math.sqrt(histsol.zip(result.points(0)).map{case (x1,x2) => math.pow(x1-x2,2.0)}.sum)<epsilon)
+
+      ((math.abs(fitval - histfitval)*2 / (math.abs(fitval) + math.abs(histfitval))  < epsilon),fitval,histfitval)//&&(math.sqrt(histsol.zip(result.points(0)).map{case (x1,x2) => math.pow(x1-x2,2.0)}.sum)<epsilon)
     }
   }
 
@@ -90,6 +92,12 @@ object Indicators {
 
   case class ExpectedIndicator(value: Double,best: Double,hist: Double,successes: Int,failures: Double,name: String)
 
+  /**
+    *
+    * @param res
+    * @param historicalResultsFile
+    * @return
+    */
   def computeExpectedIndicators(res: Seq[Result],historicalResultsFile: String = "data/historicalresults.csv"):Array[Array[Any]] = {
     val hist = CocoSolutions.loadSolutions(historicalResultsFile)
     res.groupBy(_.id).map {
@@ -98,6 +106,25 @@ object Indicators {
         Array(k,expectedRunTime(historicalSolutionSuccess(0.1, hist), results.toVector).value,expectedPrecision(historicalSolutionSuccess(0.1, hist), results.toVector).value)
     }.toArray
       //.toList.sorted.mkString("\n")
+  }
+
+  /**
+    *
+    * @param res
+    * @param epsilon
+    * @param historicalResultsFile
+    * @return
+    */
+  def computeSuccesses(res:Seq[Result],historicalResultsFile: String = "data/historicalresults.csv"):Array[Array[Any]] = {
+    val hist = CocoSolutions.loadSolutions(historicalResultsFile)
+    // precision must be computed at this step (no historical data when searching)
+    val d = res.map{
+      case result => {
+        val histsuccess = historicalSolutionSuccess(100000.0, hist)(result)
+        Array(result.id,histsuccess._2,histsuccess._3,math.abs(histsuccess._2 - histsuccess._3) * 2 / (math.abs(histsuccess._2)+math.abs(histsuccess._3)),result.runs)
+      }
+    }
+    (Seq(Array("id","fopt","fhist","precision","runs"))++d).asInstanceOf[Seq[Array[Any]]].toArray
   }
 
 

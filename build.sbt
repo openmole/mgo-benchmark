@@ -41,6 +41,14 @@ libraryDependencies += "net.cilib" %% "benchmarks" % "0.1.1"
 javaOptions += "-Djava.library.path=/Users/juste/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
 //scalacOptions += "-cp ."
 
-mainClass in (Compile, run) := Some("mgobench.Run")
+//mainClass in (Compile, run) := Some("mgobench.Run")
+mainClass in (Compile, run) := Some("mgobench.Launcher")
+
+/*
+val parrun = taskKey[Unit]("All")
+parrun := {
+  (run in Runtime).inputTaskValue
+}
+*/
 
 fork := true

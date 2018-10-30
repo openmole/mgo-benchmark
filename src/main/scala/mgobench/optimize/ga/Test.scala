@@ -13,7 +13,7 @@ import mgobench.result._
 import scala.util.Random
 
 
-object replication {
+object Test {
 
   object GaussianNoise {
     def apply(rng: util.Random)(mu: Double = 0.0, sigma: Double = 0.01)= (sigma * rng.nextGaussian()) + mu

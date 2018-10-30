@@ -2,8 +2,9 @@ package mgobench.problem.coco
 
 import mgobench.problem.Problem
 import mgobench.utils.CocoJNI
-
 import java.util.concurrent.locks.ReentrantLock
+
+import mgobench.problem.noise.Noise
 
 import scala.util.Random
 
@@ -12,7 +13,7 @@ case class CocoProblem (
                          coco: CocoJNI,
                          dimension: Int,
                          number_of_objectives: Int,
-                         number_of_constraints: Int,
+                         //number_of_constraints: Int,
                          lower_bounds: Vector[Double],
                          upper_bounds: Vector[Double],
                          id: String,
@@ -42,7 +43,7 @@ case class CocoProblem (
 object CocoProblem {
 
 
-  val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,0,Vector.empty,Vector.empty,"empty","empty",0,"empty",0,true)
+  val emptyProblem : CocoProblem = CocoProblem(0,null,0,0,Vector.empty,Vector.empty,"empty","empty",0,"empty",0,true)
 
   //val evaluationLock: ReentrantLock = new ReentrantLock
 
@@ -51,36 +52,27 @@ object CocoProblem {
     * @param pointer pointer to the coco_problem_t object
     * @throws Exception
     */
-  def apply(coco: CocoJNI,pointer: Long) : CocoProblem = {
+  def apply(coco: CocoJNI,pointer: Long,extnoise: Noise = null) : CocoProblem = {
     if(pointer == 0) return emptyProblem
     else {
-      /*while(evaluationLock.isLocked) {
-        println("locked");
-        java.lang.Thread.sleep(100)
+      val dim = coco.cocoProblemGetDimension(pointer)
+      val objs = coco.cocoProblemGetNumberOfObjectives(pointer)
+      val low = coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector]
+      val high = coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector]
+      val id = coco.cocoProblemGetId(pointer)
+      val fun = id.split("_")(1).replace("0", "")
+      val inst = id.split("_")(2).replace("i", "").toInt
+      val name = coco.cocoProblemGetName(pointer)
+      val index = coco.cocoProblemGetIndex(pointer)
+
+      if(extnoise==null) {
+        new CocoProblem(pointer, coco, dim, objs, low, high, id, fun, inst, name, index, false)
+      }else {
+        new CocoProblem(pointer, coco, dim, objs, low, high, id, fun, inst, name, index, false) with Noise {
+          override def noise(x: Vector[Double]): Vector[Double] = extnoise.noise(x)
+          override def noiseName: String = extnoise.noiseName
+        }
       }
-      evaluationLock.lock()
-      */
-
-      //this.synchronized {
-
-      val res = new CocoProblem(
-          pointer,
-          coco,
-          coco.cocoProblemGetDimension(pointer),
-          coco.cocoProblemGetNumberOfObjectives(pointer),
-          coco.cocoProblemGetNumberOfConstraints(pointer),
-          coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector],
-          coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector],
-          coco.cocoProblemGetId(pointer),
-          coco.cocoProblemGetId(pointer).split("_")(1).replace("0", ""),
-          coco.cocoProblemGetId(pointer).split("_")(2).replace("i", "").toInt,
-          coco.cocoProblemGetName(pointer),
-          coco.cocoProblemGetIndex(pointer),
-          false
-        )
-        //evaluationLock.unlock()
-        res
-      //}
     }
   }
 
