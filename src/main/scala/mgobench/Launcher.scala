@@ -26,7 +26,7 @@ object Launcher extends App {
   /**
     * Seed of the noise
     */
-  val seed: Int = args(2).toInt
+  val seed: Int = new util.Random().nextInt()//args(2).toInt
 
   /**
     * number of iterations should approximately be the number of function calls
