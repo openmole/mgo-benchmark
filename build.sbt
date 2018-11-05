@@ -38,7 +38,8 @@ libraryDependencies += "net.cilib" %% "benchmarks" % "0.1.1"
 //libraryDependencies += "net.cilib" % "cilib_2.11" % "2.0.0-M1"
 
 //javaOptions += "-Djava.library.path="+sys.env.get("CS_HOME")+"/NoisyEA/Models/mgo-benchmark/lib/coco/build"
-javaOptions += "-Djava.library.path=/Users/juste/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
+//javaOptions += "-Djava.library.path=/Users/juste/ComplexSystems/NoisyEA/Models/mgo-benchmark/lib/coco/build"
+javaOptions += "-Djava.library.path=lib/coco/build"
 //scalacOptions += "-cp ."
 
 //mainClass in (Compile, run) := Some("mgobench.Run")

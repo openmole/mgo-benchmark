@@ -1,0 +1,57 @@
+import java.text.SimpleDateFormat
+import java.util.Date
+
+logger.level("FINE")
+
+val optimizers = Val[String]
+val nBootstraps = Val[Int]
+val seed = Val[Int]
+val iterations = Val[Int]
+val nrepets = Val[Int]
+val sigma = Val[Double]
+val lambda = Val[Int]
+val particles = Val[Int]
+
+val id = Val[Int]
+
+val results = Val[File]
+
+// run command : sbt "run optimName nBootstraps seed iterations nrepets sigma lambda particles"
+
+val model = UDockerTask(
+image = workDirectory / "mgobench_20181105.tgz",
+      run = "sh -c \"cd /home/mgo-benchmark; sbt \\\"run ${optimizers} ${nBootstraps} ${seed} ${iterations} ${nrepets} ${sigma} ${lambda} ${particles}\\\"\""//,
+      //reuseContainer=false,cacheInstall=false,forceUpdate=true
+    ) set (
+      (inputs, outputs) += (optimizers, nBootstraps,seed,iterations,nrepets,sigma,lambda,particles,id),
+      outputFiles += ("/home/mgo-benchmark/res", results)
+    )
+
+//val purpose = "DIRECTSAMPLING_GRID"
+val purpose = "TEST"
+
+
+val resultsHook = CopyFileHook(results, workDirectory / "exploration" / (((new SimpleDateFormat("yyyyMMdd_HHmmss")).format(new Date()))+("_"+purpose)))
+
+//val env = EGIEnvironment("vo.complex-systems.eu",openMOLEMemory = 2000 megabytes)
+val env = LocalEnvironment(5)
+
+
+
+val exploration = DirectSampling(
+      //evaluation = ((model on env by 10) hook resultsHook),
+      evaluation = (model hook resultsHook),
+      sampling = (
+        LHS(1,sigma in Range(0.5,5.0))
+        x (optimizers is "all")
+        x (nBootstraps is 1)
+        x (iterations is 10000)
+        x (nrepets is 10)
+        x (lambda is 20)
+        x (particles is 20)
+        x (seed in (UniformDistribution[Int](10000) take 5))
+      ) withIndex id
+    )
+
+
+exploration
