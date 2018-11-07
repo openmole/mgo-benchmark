@@ -1,4 +1,5 @@
 import mgobench.optimize._
+import mgobench.optimize.ga.KalmanNSGA2
 import mgobench.optimize.pso.{GCPSO, GlobalBestPSO}
 import mgobench.optimize.psoakka.BasicPSOAkka
 //import mgobench.optimize.ga.NSGA2
@@ -30,6 +31,21 @@ package object mgobench {
 
   }
 
+  def testKalmanGA(): Unit = {
+    val iterations = 10000
+    val res: Seq[Result] = Benchmark.benchmark(
+      optimizers = Seq(
+        KalmanNSGA2(lambda = 50, mu = 10, generations = iterations, cloneProbability = 0.5,observationNoise = 1.0)
+      ),
+      nBootstraps = 1,
+      suite = CocoSuite.getSuite("bbob"),
+      problemsNumber = 1,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
+    val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
+    println(res)
+    println(Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.01,hist),res.toVector))
+  }
 
   def testPSO(): Unit = {
     val iterations = 1000

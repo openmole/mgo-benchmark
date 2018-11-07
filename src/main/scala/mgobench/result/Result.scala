@@ -11,10 +11,25 @@ import mgobench.problem.coco.CocoProblem
 //type mgobench.result.Result = Vector[(Vector[Double],Vector[Double])]
 
 case class Result(
+                   /**
+                     * points
+                     */
                   points: Vector[Vector[Double]],
-                  values: Vector[Vector[Double]],
 
+                   /**
+                     * Fitness values
+                     */
+                   values: Vector[Vector[Double]],
+
+                   /**
+                     * Precisions
+                     */
                   precisions : Vector[Vector[Double]],
+
+                   /**
+                     * Number of evaluation for each point
+                     */
+                   evaluations: Vector[Int],
 
                   /**
                     * Total number of function evaluations
@@ -31,6 +46,9 @@ case class Result(
                     */
                   optimizer: Optimization,
 
+                   /**
+                     * an id giving the problem and the optimizer
+                     */
                   id: String
                  ) {
 
@@ -46,7 +64,7 @@ case class Result(
 
 object Result {
 
-  val empty = Result(Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem,new RandomSearch(0,0,0),"empty")
+  val empty = Result(Vector.empty,Vector.empty,Vector.empty,Vector.empty,0,Problem.emptyProblem,new RandomSearch(0,0,0),"empty")
 
 
   /**
@@ -60,7 +78,30 @@ object Result {
     */
   def apply(points: Vector[Vector[Double]],values: Vector[Vector[Double]],runs: Int,problem: Problem,optimizer: Optimization): Result = {
     Result(
-      points,values,Vector.empty,runs,problem,optimizer,
+      points,
+      values,
+      Vector.empty,
+      Vector.empty,
+      runs,
+      problem,
+      optimizer,
+      problem.asInstanceOf[CocoProblem].fun+"_"+problem.asInstanceOf[CocoProblem].instance+"_"+problem.dimension+"_"+optimizer.name
+    )
+  }
+
+  def apply(points: Vector[Vector[Double]],
+            values: Vector[Vector[Double]],
+            precisions: Vector[Vector[Double]],
+            evaluations: Vector[Int],
+            runs: Int,problem: Problem,optimizer: Optimization): Result = {
+    Result(
+      points,
+      values,
+      precisions,
+      evaluations,
+      runs,
+      problem,
+      optimizer,
       problem.asInstanceOf[CocoProblem].fun+"_"+problem.asInstanceOf[CocoProblem].instance+"_"+problem.dimension+"_"+optimizer.name
     )
   }
