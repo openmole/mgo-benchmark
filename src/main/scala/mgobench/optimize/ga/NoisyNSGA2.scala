@@ -25,10 +25,10 @@ import scala.language.higherKinds
 
 
 case class NoisyNSGA2(
-                     mu: Int,
-                     lambda: Int,
-                     generations: Int,
-                     historySize: Int = 100,
+                       lambda: Int,
+                       mu: Int,
+                       generations: Int,
+                       historySize: Int = 100,
 
                      /**
                        * Reevaluation rate of each individual

@@ -37,7 +37,7 @@ case class KalmanNSGA2(
 
   override def optimize(problem: Problem): Result = KalmanNSGA2.optimize(this,problem)
 
-  override def name: String = "KalmanNSGA2-"+mu+"-"+lambda+"-"+cloneProbability+"-"+observationNoise+"-"+generations
+  override def name: String = "KalmanNSGA2-"+mu+"-"+lambda+"-"+cloneProbability+"-"+observationNoise
 }
 
 
@@ -50,17 +50,20 @@ object KalmanNSGA2 {
     val prevevals = problem.evaluations
     val instance = KalmanNSGA2Instance(kalmanNSGA2,problem)
 
-    //def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] = instance.until(afterGeneration(kalmanNSGA2.generations)).
-      //trace { (s, _) =>if(s.generation%100==0) {println(s.generation)}}.
-    //  evolution
-    def algo[M[_]: Generation: Random: cats.Monad: StartTime: IO] = instance.until(afterGeneration(kalmanNSGA2.generations/100))
+    def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] = instance.until(afterGeneration(kalmanNSGA2.generations)).
+      trace { (s, _) =>if(s.generation%1000==0) {println(s.generation)}}.
+      evolution
+
+    //def algo[M[_]: Generation: Random: cats.Monad: StartTime: IO] = instance.until(afterGeneration(kalmanNSGA2.generations/100)).
+    //   trace { (s, _) =>if(s.generation%1000==0) {println(s.generation)}}
     //def algo[M[_]: Generation: Random: cats.Monad: StartTime: IO] =  afterGeneration(kalmanNSGA2.generations/100).run(instance)
 
-    def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] = for {
+    /*def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] = for {
       initialPop <- algo.algo.initialPopulation(algo.t)
       finalPop <- algo.step.fold(initialPop)(algo.stopCondition.getOrElse(never[M, KalmanNSGA2Operations.KalmanIndividual.Individual]))
       s <- algo.algo.state
     } yield (s, finalPop)
+    */
 
     val runres = run(kalmanNSGA2.rng) {
       imp => import imp._
@@ -125,7 +128,10 @@ object KalmanNSGA2 {
 
   def breeding[M[_]: Generation: Random: cats.Monad](lambda: Int,cloneProbability: Double): Breeding[M, Individual, Genome] =
     KalmanNSGA2Operations.breeding[M, Individual, Genome](
+      // the fitness for rank selection corresponds to the estimated fitness plus the uncertainty
+      //i => vectorFitness.get(i).zip(vectorUncertainty.get(i)).map{case (f,u) => f+u},
       vectorFitness.get,
+      vectorUncertainty.get,
       Individual.genome.get,
       continuousValues.get,
       buildGenome(_, None, Vector.empty, None),
@@ -153,9 +159,9 @@ object KalmanNSGA2 {
   def result(population: Vector[Individual], continuous: Vector[C]): Vector[Result] = {
 
     // FIXME add as an option the function to select final solution given fitnesses and uncertainties
-    println(population.map {_.evaluations})
-    println(population.map{_.fitness(0)})
-    println(population.map {case i => i.fitness(0)+i.uncertainty(0)})
+    //println(population.map {_.evaluations})
+    //println(population.map{_.fitness(0)})
+    //println(population.map {case i => i.fitness(0)+i.uncertainty(0)})
 
     keepFirstFront(
       population.map { case i => Individual(i.genome, i.fitness.zip(i.uncertainty).map { case (f, u) => f + u }, i.uncertainty, i.evaluations) },

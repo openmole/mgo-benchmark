@@ -52,7 +52,7 @@ object Launcher extends App {
 
   val rs = RandomSearch(iterations / nrepets,nrepets,seed)
   val gd = GradientDescent(iterations)
-  val ngd = NoisyGradientDescent(1000,nrepets,iterations/1000)
+  val ngd = NoisyGradientDescent(1000,nrepets,iterations/1000,tolerance=1e-20)
   val nsga2 = NSGA2(lambda,1,nrepets,iterations / nrepets)
   val noisynsga2 = NoisyNSGA2(lambda,1,iterations,historySize = 100,cloneProbability = 0.2)
   val pso = GlobalBestPSO(iterations / particles,particles)

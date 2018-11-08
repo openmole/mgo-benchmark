@@ -6,15 +6,16 @@ import mgo.algorithm.CDGenome._
 import mgo.algorithm.deterministic
 import mgo.contexts._
 import mgo.elitism._
-import mgo.ranking._
+import mgo.ranking.{reversedRanking, _}
 import mgo.tools._
 import cats.implicits._
 import freedsl.tool._
 import mgo.algorithm.GenomeVectorDouble._
 import mgo.breeding._
+import mgo.dominance.nonStrictDominance
 import monocle.macros._
 import shapeless._
-
+import mgobench.utils._
 
 object KalmanNSGA2Operations {
 
@@ -49,6 +50,7 @@ object KalmanNSGA2Operations {
     */
   def breeding[M[_]: cats.Monad: Generation: Random, I, G](
                                                             fitness: I => Vector[Double],
+                                                            uncertainty: I => Vector[Double],
                                                             genome: I => G,
                                                             genomeValues: G => Vector[Double],
                                                             buildGenome: Vector[Double] => G,
@@ -58,7 +60,7 @@ object KalmanNSGA2Operations {
                                                             cloneProbability: Double
                                                           ): Breeding[M, I, G] = Breeding { population =>
     for {
-      ranks <- paretoRankingMinAndCrowdingDiversity[M, I](fitness) apply population
+      ranks <- paretoRankingMinAndCrowdingDiversity[M, I](i=>fitness(i)+uncertainty(i)) apply population
       breeding = applyOperators[M, I, Vector[Double]](crossover, mutation, tournament[M, I, (Lazy[Int], Lazy[Double])](ranks), genome andThen genomeValues) apply population
       offspring <- breeding repeat ((lambda + 1) / 2)
       offspringGenomes = offspring.flatMap {
@@ -69,8 +71,10 @@ object KalmanNSGA2Operations {
       }
       sizedOffspringGenomes <- randomTake[M, G](offspringGenomes, lambda)
 
-      // FIXME the selection for cloning must be here with an uncertainty-based tournament
-      gs <- clonesReplace[M, I, G](cloneProbability, population, genome, tournament(ranks)) apply sizedOffspringGenomes
+      // the selection for cloning is done here with an uncertainty-based tournament
+      acceptableFitnesses: Vector[Double] = population.map(fitness).zip(population.map(uncertainty)).map{case(f,u)=>(f+u).sum/f.size}
+      ranksPrioritary <- lexicoRanking[M,I](acceptableRanking[M,I](fitness,acceptableFitnesses),paretoRanking[M,I](i=>uncertainty(i).map{1/_})) apply population
+      gs <- clonesReplace[M, I, G](cloneProbability, population, genome, tournament[M, I, (Lazy[Int], Lazy[Int])](ranksPrioritary)) apply sizedOffspringGenomes
     } yield gs
   }
 

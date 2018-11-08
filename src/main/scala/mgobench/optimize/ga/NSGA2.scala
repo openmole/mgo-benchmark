@@ -23,8 +23,8 @@ import scala.language.higherKinds
 
 
 case class NSGA2(
-                  mu: Int,
                   lambda: Int,
+                  mu: Int,
                   nrepets: Int,
                   generations: Int,
                   rng: scala.util.Random = new scala.util.Random

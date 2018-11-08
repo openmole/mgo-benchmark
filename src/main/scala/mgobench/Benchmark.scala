@@ -28,6 +28,7 @@ object Benchmark {
     * @return Everything flatten (problem and optimizer stored in Result)
     */
   def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 1,problemFilter: Problem=>Boolean = {_=>true}): Seq[Result] = {
+    println("Launching benchmark on Optimizers "+optimizers.mkString(";"))
     var currentProblem = suite.getNextProblem
     val res = new ArrayBuffer[Result]
     var k = 0
