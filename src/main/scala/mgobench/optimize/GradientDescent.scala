@@ -31,7 +31,7 @@ case class GradientDescent (
 
                              tolerance: Double = -1,//1e-20,
 
-                             x0: (Problem => Array[Double]) = {problem => problem.boundaries.map{case c => (c.low + c.high)/2}.toArray}
+                             x0: (Problem => Array[Double]) = GradientDescent.x0
 
                            ) extends Optimization {
 
@@ -43,6 +43,16 @@ case class GradientDescent (
 
 
 object GradientDescent {
+
+  def x0: (Problem => Array[Double]) = {problem => problem.boundaries.map{case c => (c.low + c.high)/2}.toArray}
+
+  def apply(i: Int): GradientDescent = GradientDescent(i,1,1e-5,7,-1,x0)
+  /*def apply(it: Int): GradientDescent = {
+    println("Constructing GD")
+    val res = GradientDescent(it)
+    println(res.name)
+    res
+  }*/
 
   /**
     * Default run

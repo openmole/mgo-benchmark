@@ -25,8 +25,11 @@ case class NoisyGradientDescent(
 
 object NoisyGradientDescent {
 
-  def apply(iterations: Int, stochastic_iterations: Int, nsearchs: Int,tolerance: Double): NoisyGradientDescent =
-    NoisyGradientDescent(iterations,stochastic_iterations,nsearchs,iterations*stochastic_iterations*nsearchs)
+  def apply(iterations: Int, stochastic_iterations: Int, nsearchs: Int,tolerance: Double): NoisyGradientDescent = {
+    //println("Constructing NGD")
+    NoisyGradientDescent(iterations,stochastic_iterations,nsearchs,iterations*stochastic_iterations*nsearchs,-1,new Random)
+  }
+
 
   def optimize(noisyGradientDescent: NoisyGradientDescent,problem: Problem): Result = {
     val solver = GradientDescent(noisyGradientDescent.iterations,stochastic_iterations=noisyGradientDescent.stochastic_iterations,tolerance=noisyGradientDescent.tolerance,

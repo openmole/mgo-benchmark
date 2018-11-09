@@ -27,10 +27,10 @@ res$algo = sapply(strsplit(as.character(res$id),'_'),function(l){strsplit(l[4],"
 
 #res%>% group_by(problem,algo,sigma) %>% summarise(count=n())
 
-epsilon = 0.1
+epsilon = 1e-7
 
 res$solved = ifelse(res$precision < epsilon,1,0)
-res$runfactor = cut(log(res$runs),breaks = 20)
+res$runfactor = cut(log(res$runs),breaks = 20,labels = F)
 
 sres = res %>% group_by(algo,sigma,runfactor)  %>% summarise(
   success = sum(solved)/n()

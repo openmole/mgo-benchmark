@@ -7,6 +7,7 @@ import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
 import org.apache.commons.math3.genetics.StoppingCondition
+import mgobench.utils._
 
 import scala.util.Random
 
@@ -56,7 +57,7 @@ object RandomSearch {
     */
   def optimize(fitness : Vector[Double] => Vector[Double])(genome : Vector[C])(nsearchs: Int)(nrepets: Int)(rng : Random) : Vector[(Vector[Double],Vector[Double])] = {
     val points = Vector.fill(nsearchs)(genome.map {c => (c.high - c.low)*rng.nextDouble() +  c.low})
-    val fitnessValues = points.map{x => fitness(x)}
+    val fitnessValues = points.map{x => (1 to nrepets by 1).map{_ => fitness(x)}.reduce{ebesum}.map{_/nrepets}}
     val front = benchmark.paretoFront(points,fitnessValues)
     front.map{i => (i.genome.continuousValues.to[Vector],i.fitness.to[Vector])}
   }

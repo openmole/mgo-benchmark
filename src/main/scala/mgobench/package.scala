@@ -1,7 +1,10 @@
+
 import mgobench.optimize._
 import mgobench.optimize.ga.{NoisyNSGA2, _}
 import mgobench.optimize.pso.{GCPSO, GlobalBestPSO}
 import mgobench.optimize.psoakka.BasicPSOAkka
+import mgobench.problem.coco.NoisyCocoSuite
+import mgobench.problem.noise.GaussianNoise1D
 //import mgobench.optimize.ga.NSGA2
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite}
 import mgobench.result.{Indicators, Result}
@@ -13,19 +16,22 @@ package object mgobench {
 
 
   def testBenchmark(): Unit = {
-    val iterations = 1000
+    println("Running test benchmark")
+    val iterations = 10000
+    val nrepets = 10
+    val sigma = 2.0
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        mgobench.optimize.RandomSearch(iterations),
-        mgobench.optimize.GradientDescent(iterations = iterations),
-        mgobench.optimize.NoisyGradientDescent(iterations=iterations/100,stochastic_iterations=1,nsearchs=100,tolerance=1e-20),
+        mgobench.optimize.RandomSearch(iterations / nrepets,nrepets,1),
+        mgobench.optimize.GradientDescent(iterations / nrepets, nrepets),
+        mgobench.optimize.NoisyGradientDescent(iterations=iterations/(100*nrepets),stochastic_iterations=nrepets,nsearchs=100,tolerance=1e-20),
         mgobench.optimize.ga.NSGA2(lambda = 100, mu = 20,nrepets = 1,generations = (iterations/100) - 1),
         mgobench.optimize.ga.KalmanNSGA2(lambda = 100, mu = 20, generations = (iterations/100)-1, cloneProbability = 0.5,observationNoise = 1.0),
         mgobench.optimize.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2),
         mgobench.optimize.pso.GlobalBestPSO(iterations = iterations / 100,particles = 100)
       ),
       nBootstraps = 1,
-      suite = CocoSuite.getSuite("bbob"),
+      suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
       problemsNumber = 1,
       problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
     )
@@ -33,6 +39,23 @@ package object mgobench {
     println(res.mkString("\n"))
     //utils.io.File.writeCSV(Indicators.computeExpectedIndicators(res),"res/test/test.csv",";")
 
+  }
+
+  def testNoisyGA(): Unit = {
+    println("Running test NoisyNSGA2")
+    val iterations = 10000
+    val sigma = 2.0
+    val res: Seq[Result] = Benchmark.benchmark(
+      optimizers = Seq(
+        mgobench.optimize.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
+      ),
+      nBootstraps = 1,
+      suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
+      problemsNumber = 1,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
+
+    println(res.mkString("\n"))
   }
 
   def testKalmanGA(): Unit = {

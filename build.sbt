@@ -42,8 +42,8 @@ libraryDependencies += "net.cilib" %% "benchmarks" % "0.1.1"
 javaOptions += "-Djava.library.path=lib/coco/build"
 //scalacOptions += "-cp ."
 
-mainClass in (Compile, run) := Some("mgobench.Run")
-//mainClass in (Compile, run) := Some("mgobench.Launcher")
+//mainClass in (Compile, run) := Some("mgobench.Run")
+mainClass in (Compile, run) := Some("mgobench.Launcher")
 
 /*
 val parrun = taskKey[Unit]("All")

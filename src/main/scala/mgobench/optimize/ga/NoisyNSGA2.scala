@@ -18,6 +18,7 @@ import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
 import shapeless._
+import mgobench.utils._
 
 import scala.language.higherKinds
 
@@ -58,10 +59,14 @@ object NoisyNSGA2 {
       evolution
     val (finalState,finalPopulation) = (run(noisyNSGA2.rng) { imp => import imp._ ; evolution[DSL].eval})
     val res : Vector[NoisyNSGA2.Result] = result(instance,finalPopulation)
-    val orderedRes = res.sortWith{case (r1,r2) => r1.fitness < r2.fitness } // put best result in first for 1D
+    //println("Noisynsga2 - result : "+res)
+    //println("Noisynsga2 - result.fitnesses : "+res.map{_.fitness(0)})
+    val orderedRes = res.sortWith{case (r1,r2) => r1.fitness(0) < r2.fitness(0) } // put best result in first for 1D - FIXME one dimensional only for now
     mgobench.result.Result(
-      points = orderedRes.map{_.continuous},
-      values = orderedRes.map{_.fitness},
+      //points = orderedRes.map{_.continuous},
+      points = orderedRes.take(1).map{_.continuous},
+      //values = orderedRes.map{_.fitness},
+      values = orderedRes.take(1).map{_.fitness},
       runs = problem.evaluations - prevevals,
       problem = problem.asInstanceOf[CocoProblem],
       optimizer = noisyNSGA2
@@ -75,6 +80,7 @@ object NoisyNSGA2 {
                                  lambda: Int,
                                  fitness: (util.Random, Vector[Double]) => Vector[Double],
                                  aggregation: Vector[Vector[Double]] => Vector[Double],
+                                 aggregationWithCI: Vector[Vector[Double]] => Vector[Double],
                                  continuous: Vector[C] = Vector.empty,
                                  historySize: Int = 100,
                                  cloneProbability: Double = 0.2
@@ -82,15 +88,34 @@ object NoisyNSGA2 {
 
   object NoisyNSGA2Instance {
 
+    /**
+      * Simple average aggregation
+      * @param h
+      * @return
+      */
     def aggregation(h: Vector[Vector[Double]]): Vector[Double] = {
-      def sumvec(v1: Vector[Double],v2: Vector[Double]): Vector[Double] = v1.zip(v2).map{case (x1,x2)=>x1+x2}
-      h.map{_.map{ _ / h.length}}.reduce(sumvec)
+      //def sumvec(v1: Vector[Double],v2: Vector[Double]): Vector[Double] = v1.zip(v2).map{case (x1,x2)=>x1+x2}
+      h.map{_.map{ _ / h.length}}.reduce(ebesum)
+    }
+
+    /**
+      * Aggregation taking into variability with a simple gaussian CI
+      *   - how the CI is computed should be adaptative ? bootstrap CI ? estimate noise distribution shape ?
+      * @param h
+      * @return
+      */
+    def aggregationWithCI(h: Vector[Vector[Double]]): Vector[Double] = {
+      val sigmas = h.transpose.map(sd)
+      val avgfitness = h.map{_.map{ _ / h.length}}.reduce(ebesum)
+      //println(avgfitness.toString+"\n"+"+"+sigmas.toString)
+      avgfitness.zip(sigmas).map{case(f,s)=> f + (1.96*s)/math.sqrt(h.length)}
     }
 
     def apply(noisyNSGA2: NoisyNSGA2,problem: Problem): NoisyNSGA2Instance = NoisyNSGA2Instance(
       noisyNSGA2.mu,noisyNSGA2.lambda,
       fitness = (_,x)=>problem.fitness(x),
       aggregation = aggregation,
+      aggregationWithCI = aggregationWithCI,
       problem.boundaries,
       noisyNSGA2.historySize,noisyNSGA2.cloneProbability
     )
@@ -109,7 +134,11 @@ object NoisyNSGA2 {
       }
 
     def result(nsga2: NoisyNSGA2Instance, population: Vector[Individual]): Vector[Result] =
-      result(population, nsga2.aggregation, nsga2.continuous)
+      result(population,
+        //nsga2.aggregation, // FIXME add CI computation as an option
+        nsga2.aggregationWithCI,
+        nsga2.continuous
+      )
 
     def initialGenomes[M[_] : cats.Monad : Random](lambda: Int, continuous: Vector[C]) =
       CDGenome.initialGenomes[M](lambda, continuous, Vector.empty)

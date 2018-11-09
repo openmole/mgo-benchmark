@@ -3,8 +3,9 @@ package mgobench
 
 object Run extends App {
 
-  //testKalmanGA()
   testBenchmark()
+  //testKalmanGA()
+  //testNoisyGA()
   //testPSO()
   //resultExtraction()
   //testGradientDescent()
