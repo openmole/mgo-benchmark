@@ -14,7 +14,7 @@ import java.util.Date
 
 
 /**
-  * sbt run optimName nBootstraps seed iterations nrepets sigma lambda particles
+  * sbt run optimName nBootstraps seed budget nrepets sigma lambda particles
   */
 object Launcher extends App {
 
@@ -29,9 +29,12 @@ object Launcher extends App {
   val seed: Int = new util.Random().nextInt()//args(2).toInt
 
   /**
-    * number of iterations should approximately be the number of function calls
+    * approximate number of function calls = budget
+    *
+    * Fixed param in NoisyGradient => budget / nrepets >= 100
+    *
     */
-  val iterations: Int = args(3).toInt
+  val budget: Int = args(3).toInt
 
   /**
     * number of local repets (use depends on the method)
@@ -50,12 +53,34 @@ object Launcher extends App {
   val lambda: Int = args(6).toInt
   val particles: Int = args(7).toInt
 
-  val rs = RandomSearch(iterations / nrepets,nrepets,seed)
-  val gd = GradientDescent(iterations)
-  val ngd = NoisyGradientDescent(1000,nrepets,iterations/1000)
-  val nsga2 = NSGA2(lambda,1,nrepets,iterations / nrepets)
-  val noisynsga2 = NoisyNSGA2(lambda,1,iterations,historySize = 100,cloneProbability = 0.2)
-  val pso = GlobalBestPSO(iterations / particles,particles)
+  val rs = RandomSearch(
+    nsearchs = budget / nrepets,
+    nrepets = nrepets,
+    seed = seed
+  )
+  val gd = GradientDescent(iterations = budget)
+  val ngd = NoisyGradientDescent(
+    iterations = budget / (nrepets * 100),
+    stochastic_iterations = nrepets,
+    nsearchs = 100
+  )
+  val nsga2 = NSGA2(
+    mu = 1,
+    lambda = lambda,
+    nrepets = nrepets,
+    generations = budget / (lambda * nrepets)
+  )
+  val noisynsga2 = NoisyNSGA2(
+    mu = 1,
+    lambda = lambda,
+    generations = budget / lambda,
+    historySize = 100,
+    cloneProbability = 0.2
+  )
+  val pso = GlobalBestPSO(
+    iterations = budget / particles,
+    particles = particles
+  )
 
   val optimizers: Seq[Optimization] = optimName match {
     case "RS" => Seq(rs)

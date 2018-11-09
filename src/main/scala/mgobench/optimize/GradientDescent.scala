@@ -29,8 +29,14 @@ case class GradientDescent (
 
                              m: Int = 7,
 
-                             tolerance: Double = 1e-5,
+                             /**
+                               * Very small tolerance to effectively reach the max number of iterations
+                               */
+                             tolerance: Double = 1e-20,
 
+                             /**
+                               * By default take the middle of the space
+                               */
                              x0: (Problem => Array[Double]) = {problem => problem.boundaries.map{case c => (c.low + c.high)/2}.toArray}
 
                            ) extends Optimization {

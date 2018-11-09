@@ -8,6 +8,7 @@ import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
 import org.apache.commons.math3.genetics.StoppingCondition
 
+import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 
@@ -29,9 +30,23 @@ case class RandomSearch (
     * @return
     */
   override def optimize(problem: Problem): Result = {
+    /*val res = new ArrayBuffer[Result]
+    (1 to (nsearchs / resultStep) by 1).foreach { _ =>
+      val prevevals = problem.evaluations
+      val rawres: Vector[(Vector[Double], Vector[Double])] = RandomSearch.optimize(problem)(resultStep)(nrepets)
+      res.append(Result(rawres.map {
+        _._1
+      }, rawres.map {
+        _._2
+      }, problem.evaluations - prevevals, problem.asInstanceOf[CocoProblem], this)
+      )
+    }
+    res.toSeq
+    */
+
     val prevevals = problem.evaluations
-    val rawres: Vector[(Vector[Double],Vector[Double])] = RandomSearch.optimize(problem)(nsearchs)(nrepets)
-    Result(rawres.map{_._1},rawres.map{_._2},problem.evaluations - prevevals,problem.asInstanceOf[CocoProblem],this)
+    val rawres: Vector[(Vector[Double], Vector[Double])] = RandomSearch.optimize(problem)(resultStep)(nrepets)
+    Result(rawres.map {_._1}, rawres.map {_._2}, problem.evaluations - prevevals, problem.asInstanceOf[CocoProblem], this)
   }
 
   override def name: String = "RS-"+nsearchs+"-"+nrepets
