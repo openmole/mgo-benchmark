@@ -5,7 +5,7 @@ package mgobench.optimize
 // impossible to use dynaml
 
 import breeze.linalg.DenseVector
-import breeze.optimize.{ApproximateGradientFunction, DiffFunction, LBFGS}
+import breeze.optimize.{ApproximateGradientFunction, DiffFunction, FirstOrderMinimizer, LBFGS}
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
@@ -29,15 +29,12 @@ case class GradientDescent (
 
                              m: Int = 7,
 
-                             /**
-                               * Very small tolerance to effectively reach the max number of iterations
-                               */
-                             tolerance: Double = 1e-20,
 
-                             /**
+                             tolerance: Double = -1,//1e-20,
+                            /**
                                * By default take the middle of the space
                                */
-                             x0: (Problem => Array[Double]) = {problem => problem.boundaries.map{case c => (c.low + c.high)/2}.toArray}
+                             x0: (Problem => Array[Double]) = GradientDescent.x0
 
                            ) extends Optimization {
 
@@ -49,6 +46,16 @@ case class GradientDescent (
 
 
 object GradientDescent {
+
+  def x0: (Problem => Array[Double]) = {problem => problem.boundaries.map{case c => (c.low + c.high)/2}.toArray}
+
+  def apply(i: Int): GradientDescent = GradientDescent(i,1,1e-5,7,-1,x0)
+  /*def apply(it: Int): GradientDescent = {
+    println("Constructing GD")
+    val res = GradientDescent(it)
+    println(res.name)
+    res
+  }*/
 
   /**
     * Default run
@@ -102,7 +109,14 @@ object GradientDescent {
 
     // define the solver
     //println("Running LBFGS on problem "+problem.toString)
-    val lbfgs = new LBFGS[DenseVector[Double]](maxIter=gradientDescent.iterations, m=gradientDescent.m,tolerance=gradientDescent.tolerance)
+    val lbfgs = if(gradientDescent.tolerance < 0){
+      //println("GD : no cv check")
+      new LBFGS[DenseVector[Double]](FirstOrderMinimizer.maxIterationsReached[DenseVector[Double]](gradientDescent.iterations)||FirstOrderMinimizer.searchFailed,gradientDescent.m)
+    } else {
+      new LBFGS[DenseVector[Double]](maxIter=gradientDescent.iterations, m=gradientDescent.m,tolerance=gradientDescent.tolerance)
+    }
+
+    //println(lbfgs.convergenceCheck.initialInfo)
 
     //val res = lbfgs.minimize(gradient,new DenseVector(gradientDescent.x0.toArray))
     val minstate = lbfgs.minimizeAndReturnState(gradient,new DenseVector(gradientDescent.x0(problem)))

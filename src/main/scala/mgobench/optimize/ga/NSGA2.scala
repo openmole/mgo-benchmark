@@ -23,8 +23,8 @@ import scala.language.higherKinds
 
 
 case class NSGA2(
-                  mu: Int,
                   lambda: Int,
+                  mu: Int,
                   nrepets: Int,
                   generations: Int,
                   rng: scala.util.Random = new scala.util.Random
@@ -50,10 +50,10 @@ object NSGA2 {
       evolution
     val (finalState,finalPopulation) = (run(nsga2.rng) { imp => import imp._ ; evolution[DSL].eval})
     val res : Vector[NSGA2.Result] = result(finalPopulation,instance.continuous)
-    val orderedRes = res.sortWith{case (r1,r2) => r1.fitness < r2.fitness } // put best result in first for 1D
+    val orderedRes = res.sortWith{case (r1,r2) => r1.fitness(0) < r2.fitness(0) } // put best result in first for 1D - FIXME 1D only
     mgobench.result.Result(
-      points = orderedRes.map{_.continuous},
-      values = orderedRes.map{_.fitness},
+      points = orderedRes.take(1).map{_.continuous},
+      values = orderedRes.take(1).map{_.fitness},
       runs = problem.evaluations - prevevals,
       problem = problem.asInstanceOf[CocoProblem],
       optimizer = nsga2
@@ -84,6 +84,8 @@ object NSGA2 {
       NSGA2Instance(
         nsga2.mu,nsga2.lambda,
         problem.boundaries,
+        // FIXME possible uncertainty is not taken into account, not "fair" with the adaptive noisy nsga2
+        // should provide that as an option ?
         x => (1 to nsga2.nrepets).map{_=>problem.fitness(x)}.reduce(aggreg).map{_/nsga2.nrepets}
       )
     }

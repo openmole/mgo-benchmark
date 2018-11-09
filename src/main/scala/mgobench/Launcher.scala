@@ -7,26 +7,28 @@ import mgobench.optimize.{NoisyGradientDescent, _}
 import mgobench.optimize.ga._
 import mgobench.optimize.pso._
 import mgobench.problem.coco.{CocoProblem, NoisyCocoSuite}
-import mgobench.problem.noise.GaussianNoise1D
+import mgobench.problem.noise.{GaussianNoise1D, Noise}
 import mgobench.result.{Indicators, Result}
 import java.text.SimpleDateFormat
 import java.util.Date
 
 
 /**
-  * sbt run optimName nBootstraps seed budget nrepets sigma lambda particles
+  * sbt run optimName noiseName nBootstraps seed iterations nrepets sigma gradientnsearchs lambda mu particles kalmanCloneProba kalmanObservationNoise noisyNsga2historySize noisyNsga2cloneProba
   */
 object Launcher extends App {
 
-  assert(args.length==8,s"Wrong arg number ${args.length} ; ${args.mkString(" ")}")
+  assert(args.length==15,s"Wrong arg number ${args.length} ; ${args.mkString(" ")}")
 
   val optimName = args(0)
-  val nBootstraps = args(1).toInt
+  val noiseName = args(1)
+  val nBootstraps = args(2).toInt
 
   /**
     * Seed of the noise
     */
-  val seed: Int = new util.Random().nextInt()//args(2).toInt
+  val seed: Int = args(3).toInt
+    //new util.Random().nextInt()//
 
   /**
     * approximate number of function calls = budget
@@ -34,12 +36,13 @@ object Launcher extends App {
     * Fixed param in NoisyGradient => budget / nrepets >= 100
     *
     */
-  val budget: Int = args(3).toInt
+  val budget: Int = args(4).toInt
+
 
   /**
     * number of local repets (use depends on the method)
     */
-  val nrepets: Int = args(4).toInt
+  val nrepets: Int = args(5).toInt
 
   /**
     * precision to evaluate quality of results
@@ -47,40 +50,25 @@ object Launcher extends App {
     */
   //val epsilon: Double = args(5).toDouble
 
-  val sigma: Double = args(5).toDouble
+  val sigma: Double = args(6).toDouble
 
   // optimizer specific params
-  val lambda: Int = args(6).toInt
-  val particles: Int = args(7).toInt
+  val gradientnsearchs = args(7).toInt
+  val lambda: Int = args(8).toInt
+  val mu: Int = args(9).toInt // default 20
+  val particles: Int = args(10).toInt
+  val kalmanCloneProba: Double = args(11).toDouble // default 0.5
+  val kalmanObservationNoise: Double = args(12).toDouble // default 1.0 (?)
+  val noisyNsga2historySize: Int = args(13).toInt // default to 100
+  val noisyNsga2cloneProba: Double = args(14).toDouble //default to 0.2
 
-  val rs = RandomSearch(
-    nsearchs = budget / nrepets,
-    nrepets = nrepets,
-    seed = seed
-  )
-  val gd = GradientDescent(iterations = budget)
-  val ngd = NoisyGradientDescent(
-    iterations = budget / (nrepets * 100),
-    stochastic_iterations = nrepets,
-    nsearchs = 100
-  )
-  val nsga2 = NSGA2(
-    mu = 1,
-    lambda = lambda,
-    nrepets = nrepets,
-    generations = budget / (lambda * nrepets)
-  )
-  val noisynsga2 = NoisyNSGA2(
-    mu = 1,
-    lambda = lambda,
-    generations = budget / lambda,
-    historySize = 100,
-    cloneProbability = 0.2
-  )
-  val pso = GlobalBestPSO(
-    iterations = budget / particles,
-    particles = particles
-  )
+  val rs = RandomSearch(budget / nrepets,nrepets,seed)
+  val gd = GradientDescent(budget / nrepets,nrepets)
+  val ngd = NoisyGradientDescent(iterations=budget/(gradientnsearchs*nrepets),stochastic_iterations=nrepets,nsearchs=gradientnsearchs,tolerance=1e-20)
+  val nsga2 = NSGA2(lambda = lambda,mu = mu,nrepets = nrepets,generations = (budget / (nrepets * lambda)) - 1)
+  val kalmannsga2 = KalmanNSGA2(lambda = lambda, mu = mu, generations = (budget/lambda)-1, cloneProbability = kalmanCloneProba,observationNoise = kalmanObservationNoise)
+  val noisynsga2 = NoisyNSGA2(lambda = lambda,mu = mu,generations = (budget / lambda),historySize = noisyNsga2historySize,cloneProbability = noisyNsga2cloneProba)
+  val pso = GlobalBestPSO(iterations = budget / particles,particles = particles)
 
   val optimizers: Seq[Optimization] = optimName match {
     case "RS" => Seq(rs)
@@ -89,13 +77,19 @@ object Launcher extends App {
     case "NSGA2" => Seq(nsga2)
     case "NNSGA2" => Seq(noisynsga2)
     case "GBPSO" => Seq(pso)
-    case "all" => Seq(rs,gd,ngd,nsga2,noisynsga2,pso)
+    case "all" => Seq(rs,gd,ngd,nsga2,kalmannsga2,noisynsga2,pso)
+  }
+
+  val noise: Noise = noiseName match {
+      // only gaussian for now
+    case "Gaussian" => GaussianNoise1D(0,sigma,seed)
+    case  _ => GaussianNoise1D(0,sigma,seed)
   }
 
   val res: Seq[Result] = Benchmark.benchmark(
     optimizers = optimizers,
     nBootstraps = nBootstraps,
-    suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,seed)),
+    suite = NoisyCocoSuite("bbob",noise),
     problemsNumber = 1000,
     problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
   )
@@ -108,8 +102,8 @@ object Launcher extends App {
   //write parameters
   utils.io.File.writeCSV(
     Array(
-      Array("optimName","nBootstraps","seed","iterations","nrepets","sigma","lambda","particles").asInstanceOf[Array[Any]],
-      Array(optimName,nBootstraps,seed,iterations,nrepets,sigma,lambda,particles).asInstanceOf[Array[Any]]
+      Array("optimName","noiseName","nBootstraps","seed","budget","nrepets","sigma","gradientnsearchs","lambda","mu","particles","kalmanCloneProba","kalmanObservationNoise","noisyNsga2historySize","noisyNsga2cloneProba").asInstanceOf[Array[Any]],
+      Array(optimName,noiseName,nBootstraps,seed,budget,nrepets,sigma,gradientnsearchs,lambda,mu,particles,kalmanCloneProba,kalmanObservationNoise,noisyNsga2historySize,noisyNsga2cloneProba).asInstanceOf[Array[Any]]
     )
   ,file = "res/"+ts+"_"+optimName+"_params.csv",delimiter = ";")
 }

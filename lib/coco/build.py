@@ -53,8 +53,8 @@ if 'linux' in sys.platform:
     jdkpath = check_output(['locate', 'jni.h'],env=os.environ, universal_newlines=True)
     jdkpath1 = jdkpath.split("jni.h")[0]
     jdkpath2 = jdkpath1 + '/linux'
-    run('BUILD_DIR',['gcc', '-I', jdkpath1, '-I', jdkpath2, '-c', COCOJNI_CLASS.replace(".scala",".c").replace("/","_")])
-    run('BUILD_DIR',['gcc', '-I', jdkpath1, '-I', jdkpath2, '-o','lib'+COCOJNI_CLASS.replace(".scala",".so").replace("/","_"), '-fPIC', '-shared',COCOJNI_CLASS.replace(".scala",".c").replace("/","_")])
+    run(BUILD_DIR,['gcc', '-I', jdkpath1, '-I', jdkpath2, '-c', COCOJNI_CLASS.replace(".scala",".c").replace("/","_")])
+    run(BUILD_DIR,['gcc', '-I', jdkpath1, '-I', jdkpath2, '-o','lib'+COCOJNI_CLASS.replace(".scala",".so").replace("/","_"), '-fPIC', '-shared',COCOJNI_CLASS.replace(".scala",".c").replace("/","_")])
 elif 'darwin' in sys.platform:
     jdkversion = check_output(['javac', '-version'],  stderr=STDOUT, env=os.environ, universal_newlines=True)
     print(jdkversion)

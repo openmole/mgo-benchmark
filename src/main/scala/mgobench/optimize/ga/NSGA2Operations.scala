@@ -11,9 +11,6 @@ import contexts._
 import cats.data._
 import cats.implicits._
 import freedsl.tool._
-import mgobench.optimize.{Optimization, ga}
-import mgobench.problem.Problem
-import mgobench.result.Result
 import shapeless._
 
 import scala.language.higherKinds

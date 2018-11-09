@@ -1,6 +1,10 @@
+
 import mgobench.optimize._
+import mgobench.optimize.ga.{NoisyNSGA2, _}
 import mgobench.optimize.pso.{GCPSO, GlobalBestPSO}
 import mgobench.optimize.psoakka.BasicPSOAkka
+import mgobench.problem.coco.NoisyCocoSuite
+import mgobench.problem.noise.GaussianNoise1D
 //import mgobench.optimize.ga.NSGA2
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite}
 import mgobench.result.{Indicators, Result}
@@ -12,24 +16,63 @@ package object mgobench {
 
 
   def testBenchmark(): Unit = {
-    val iterations = 100
+    println("Running test benchmark")
+    val iterations = 10000
+    val nrepets = 10
+    val sigma = 2.0
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        mgobench.optimize.RandomSearch(iterations),
-        GradientDescent(iterations,tolerance = 1e-5),
-        NoisyGradientDescent(iterations,1,1000,1e-5,new Random),
-        mgobench.optimize.ga.NSGA2(100,20,1,10000,new Random)
+        mgobench.optimize.RandomSearch(iterations / nrepets,nrepets,1),
+        mgobench.optimize.GradientDescent(iterations / nrepets, nrepets),
+        mgobench.optimize.NoisyGradientDescent(iterations=iterations/(100*nrepets),stochastic_iterations=nrepets,nsearchs=100,tolerance=1e-20),
+        mgobench.optimize.ga.NSGA2(lambda = 100, mu = 20,nrepets = 1,generations = (iterations/100) - 1),
+        mgobench.optimize.ga.KalmanNSGA2(lambda = 100, mu = 20, generations = (iterations/100)-1, cloneProbability = 0.5,observationNoise = 1.0),
+        mgobench.optimize.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2),
+        mgobench.optimize.pso.GlobalBestPSO(iterations = iterations / 100,particles = 100)
       ),
-      nBootstraps = 2,
-      suite = CocoSuite.getSuite("bbob"),
+      nBootstraps = 1,
+      suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
       problemsNumber = 1,
       problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
     )
 
-    utils.io.File.writeCSV(Indicators.computeExpectedIndicators(res),"res/test/test.csv",";")
+    println(res.mkString("\n"))
+    //utils.io.File.writeCSV(Indicators.computeExpectedIndicators(res),"res/test/test.csv",";")
 
   }
 
+  def testNoisyGA(): Unit = {
+    println("Running test NoisyNSGA2")
+    val iterations = 10000
+    val sigma = 2.0
+    val res: Seq[Result] = Benchmark.benchmark(
+      optimizers = Seq(
+        mgobench.optimize.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
+      ),
+      nBootstraps = 1,
+      suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
+      problemsNumber = 1,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
+
+    println(res.mkString("\n"))
+  }
+
+  def testKalmanGA(): Unit = {
+    val iterations = 5000
+    val res: Seq[Result] = Benchmark.benchmark(
+      optimizers = Seq(
+        KalmanNSGA2(lambda = 100, mu = 20, generations = iterations-1, cloneProbability = 0.5,observationNoise = 1.0)
+      ),
+      nBootstraps = 1,
+      suite = CocoSuite.getSuite("bbob"),
+      problemsNumber = 1,
+      problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
+    )
+    val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
+    println(res)
+    println(Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.01,hist),res.toVector))
+  }
 
   def testPSO(): Unit = {
     val iterations = 1000
@@ -50,11 +93,14 @@ package object mgobench {
 
 
   def testGradientDescent(): Unit = {
-    val iterations = -1
+    val iterations = 100
 
     //Suite.testSuiteOptim("bbob",GradientDescent(iterations))
-    val res = Benchmark.benchmark(Seq(GradientDescent(iterations,tolerance = 1e-15)),
-      nBootstraps = 1,CocoSuite.getSuite("bbob"),problemsNumber = 5*24*3,
+    val res = Benchmark.benchmark(Seq(GradientDescent(
+      iterations
+      ,tolerance = 1e-30
+    )),
+      nBootstraps = 1,CocoSuite.getSuite("bbob"),problemsNumber = 1,
       problemFilter = _.asInstanceOf[CocoProblem].instance <= 5
     )
     //println(res)
