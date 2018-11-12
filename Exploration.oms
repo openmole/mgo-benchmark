@@ -3,52 +3,74 @@ import java.util.Date
 
 logger.level("FINE")
 
+// config
 val optimizers = Val[String]
+val noise = Val[String]
+
+// budget
 val nBootstraps = Val[Int]
 val seed = Val[Int]
 val iterations = Val[Int]
 val nrepets = Val[Int]
+
+// noise
 val sigma = Val[Double]
+
+// algo specific
+val gradientNSearchs = Val[Int]
 val lambda = Val[Int]
+val mu = Val[Int]
 val particles = Val[Int]
+val kalmanCloneProba = Val[Double]
+val kalmanObservationNoise = Val[Double]
+val noisyNsga2historySize = Val[Int]
+val noisyNsga2cloneProba = Val[Double]
 
 val id = Val[Int]
 
 val results = Val[File]
 
-// run command : sbt "run optimName nBootstraps seed iterations nrepets sigma lambda particles"
+// run command :
+// sbt "run optimName noiseName nBootstraps seed iterations nrepets sigma gradientNSearchs lambda mu particles kalmanCloneProba kalmanObservationNoise noisyNsga2historySize noisyNsga2cloneProba"
 
 val model = UDockerTask(
-image = workDirectory / "mgobench_20181105.tgz",
-      run = "sh -c \"cd /home/mgo-benchmark; sbt \\\"run ${optimizers} ${nBootstraps} ${seed} ${iterations} ${nrepets} ${sigma} ${lambda} ${particles}\\\"\""//,
+image = workDirectory / "mgobench_20181112.tgz",
+      run = "sh -c \"cd /home/mgo-benchmark; sbt \\\"run ${optimizers} ${noise} ${nBootstraps} ${seed} ${iterations} ${nrepets} ${sigma} ${gradientNSearchs} ${lambda} ${mu} ${particles} ${kalmanCloneProba} ${kalmanObservationNoise} ${noisyNsga2historySize} ${noisyNsga2cloneProba}\\\"\""//,
       //reuseContainer=false,cacheInstall=false,forceUpdate=true
     ) set (
-      (inputs, outputs) += (optimizers, nBootstraps,seed,iterations,nrepets,sigma,lambda,particles,id),
+      (inputs, outputs) += (optimizers,noise, nBootstraps,seed,iterations,nrepets,sigma,gradientNSearchs,lambda,mu,particles,kalmanCloneProba,kalmanObservationNoise,noisyNsga2historySize,noisyNsga2cloneProba,id),
       outputFiles += ("/home/mgo-benchmark/res", results)
     )
 
-//val purpose = "DIRECTSAMPLING_GRID"
-val purpose = "TEST"
+val purpose = "DIRECTSAMPLING_GRID"
+//val purpose = "TEST"
 
 
 val resultsHook = CopyFileHook(results, workDirectory / "exploration" / (((new SimpleDateFormat("yyyyMMdd_HHmmss")).format(new Date()))+("_"+purpose)))
 
-//val env = EGIEnvironment("vo.complex-systems.eu",openMOLEMemory = 2000 megabytes)
+//val env = EGIEnvironment("vo.complex-systems.eu")
 val env = LocalEnvironment(5)
 
 
 
 val exploration = DirectSampling(
       //evaluation = ((model on env by 10) hook resultsHook),
-      evaluation = (model hook resultsHook),
+      evaluation = ((model on env) hook resultsHook),
       sampling = (
         LHS(1,sigma in Range(0.5,5.0))
         x (optimizers is "all")
+        x (noise is "Gaussian")
         x (nBootstraps is 1)
         x (iterations is 10000)
-        x (nrepets is 10)
-        x (lambda is 20)
-        x (particles is 20)
+        x (nrepets is 2)
+        x (gradientNSearchs is 10)
+        x (lambda is 10)
+        x (mu is 10)
+        x (particles is 10)
+        x (kalmanCloneProba is 0.5)
+        x (kalmanObservationNoise is 1.0)
+        x (noisyNsga2historySize is 100)
+        x (noisyNsga2cloneProba is 0.2)
         x (seed in (UniformDistribution[Int](10000) take 5))
       ) withIndex id
     )
