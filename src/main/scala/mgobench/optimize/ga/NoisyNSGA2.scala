@@ -35,6 +35,13 @@ case class NoisyNSGA2(
                        * Reevaluation rate of each individual
                        */
                      cloneProbability: Double = 0.2,
+
+                       /**
+                         * Which embedding function to use
+                         *  \in {inv-size, gaussian-ci}
+                         */
+                       embedding: String = "inv-size",
+
                      rng: scala.util.Random = new scala.util.Random
                      ) extends Optimization {
 
@@ -81,6 +88,7 @@ object NoisyNSGA2 {
                                  fitness: (util.Random, Vector[Double]) => Vector[Double],
                                  aggregation: Vector[Vector[Double]] => Vector[Double],
                                  aggregationWithCI: Vector[Vector[Double]] => Vector[Double],
+                                 embedding: Vector[Vector[Double]] => Vector[Double],
                                  continuous: Vector[C] = Vector.empty,
                                  historySize: Int = 100,
                                  cloneProbability: Double = 0.2
@@ -111,13 +119,30 @@ object NoisyNSGA2 {
       avgfitness.zip(sigmas).map{case(f,s)=> f + (1.96*s)/math.sqrt(h.length)}
     }
 
+    /**
+      * Embedding with the additional indicator as the average confidence interval
+      * FIXME could be the maximal confidence interval ?
+      * @param v
+      * @return
+      */
+    def embeddingCI(v: Vector[Vector[Double]]): Vector[Double] = {
+      val n = v.size.toDouble
+      Vector(v.map(sd).sum*1.96 / (n*math.sqrt(n)))
+    }
+
     def apply(noisyNSGA2: NoisyNSGA2,problem: Problem): NoisyNSGA2Instance = NoisyNSGA2Instance(
-      noisyNSGA2.mu,noisyNSGA2.lambda,
+      noisyNSGA2.mu,
+      noisyNSGA2.lambda,
       fitness = (_,x)=>problem.fitness(x),
       aggregation = aggregation,
       aggregationWithCI = aggregationWithCI,
+      embedding = noisyNSGA2.embedding match { //dirty ; cant use trait mixin as the top-level instance is a case class ?
+        case "inv-size" =>  (v: Vector[Vector[Double]]) => Vector(1.0 / v.size.toDouble)
+        case "gaussian-ci" => embeddingCI
+      },
       problem.boundaries,
-      noisyNSGA2.historySize,noisyNSGA2.cloneProbability
+      noisyNSGA2.historySize,
+      noisyNSGA2.cloneProbability
     )
   }
 
@@ -126,7 +151,10 @@ object NoisyNSGA2 {
 
     case class Result(continuous: Vector[Double], discrete: Vector[Int], fitness: Vector[Double], replications: Int)
 
-    def result(population: Vector[Individual], aggregation: Vector[Vector[Double]] => Vector[Double], continuous: Vector[C]) =
+    def result(population: Vector[Individual],
+               aggregation: Vector[Vector[Double]] => Vector[Double],
+               //embedding: Vector[Vector[Double]]=>Vector[Double],
+               continuous: Vector[C]) =
       keepFirstFront(population, NoisyNSGA2Operations.aggregated(vectorFitness.get, aggregation)).map {
         i =>
           val (c, d, f, r) = NoisyIndividual.aggregate(i, aggregation, continuous)
@@ -161,14 +189,21 @@ object NoisyNSGA2 {
     def expression(fitness: (util.Random, Vector[Double]) => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual =
       NoisyIndividual.expression((rng, v, d) => fitness(rng, v), continuous)
 
-    def elitism[M[_] : cats.Monad : Random : Generation](mu: Int, historySize: Int, aggregation: Vector[Vector[Double]] => Vector[Double], components: Vector[C]): Elitism[M, Individual] =
+    def elitism[M[_] : cats.Monad : Random : Generation](mu: Int,
+                                                         historySize: Int,
+                                                         aggregation: Vector[Vector[Double]] => Vector[Double],
+                                                         embedding: Vector[Vector[Double]] => Vector[Double],
+                                                         components: Vector[C]
+                                                        ): Elitism[M, Individual] =
       NoisyNSGA2Operations.elitism[M, Individual](
         vectorFitness,
         aggregation,
+        embedding,
         i => values(Individual.genome.get(i), components),
         Individual.historyAge,
         historySize,
-        mu)
+        mu
+      )
 
     def state[M[_] : cats.Monad : StartTime : Random : Generation] = mgo.algorithm.state[M, Unit](())
 
@@ -194,7 +229,10 @@ object NoisyNSGA2 {
             t.mu,
             t.historySize,
             t.aggregation,
-            t.continuous))
+            t.embedding,
+            t.continuous
+          )
+        )
 
       def state = NoisyNSGA2.state[M]
     }

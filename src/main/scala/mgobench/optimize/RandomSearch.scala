@@ -46,7 +46,7 @@ case class RandomSearch (
     */
 
     val prevevals = problem.evaluations
-    val rawres: Vector[(Vector[Double], Vector[Double])] = RandomSearch.optimize(problem)(resultStep)(nrepets)
+    val rawres: Vector[(Vector[Double], Vector[Double])] = RandomSearch.optimize(problem)(nsearchs)(nrepets)
     Result(rawres.map {_._1}, rawres.map {_._2}, problem.evaluations - prevevals, problem.asInstanceOf[CocoProblem], this)
   }
 

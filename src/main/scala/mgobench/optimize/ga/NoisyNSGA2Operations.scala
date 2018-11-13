@@ -19,8 +19,13 @@ import shapeless._
 
 object NoisyNSGA2Operations {
 
-  def aggregated[I](fitness: I => Vector[Vector[Double]], aggregation: Vector[Vector[Double]] => Vector[Double])(i: I): Vector[Double] =
-    aggregation(fitness(i)) ++ Vector(1.0 / fitness(i).size.toDouble)
+  def aggregated[I](fitness: I => Vector[Vector[Double]],
+                    aggregation: Vector[Vector[Double]] => Vector[Double],
+                    embedding: Vector[Vector[Double]] => Vector[Double] = (v: Vector[Vector[Double]]) => Vector(1.0 / v.size.toDouble)
+                   )(i: I): Vector[Double] =
+    // add additional objective function as an option
+    //aggregation(fitness(i)) ++ Vector(1.0 / fitness(i).size.toDouble)
+    aggregation(fitness(i)) ++ embedding(fitness(i))
 
   def breeding[M[_]: cats.Monad: Random: Generation, I, G](
                                                             history: I => Vector[Vector[Double]],
@@ -52,13 +57,14 @@ object NoisyNSGA2Operations {
   def elitism[M[_]: cats.Monad: Random: Generation, I](
                                                         history: monocle.Lens[I, Vector[Vector[Double]]],
                                                         aggregation: Vector[Vector[Double]] => Vector[Double],
+                                                        embedding: Vector[Vector[Double]] => Vector[Double],
                                                         values: I => (Vector[Double], Vector[Int]),
                                                         historyAge: monocle.Lens[I, Long],
                                                         historySize: Int,
                                                         mu: Int): Elitism[M, I] = Elitism[M, I] { population =>
     for {
       cloneRemoved <- applyCloneStrategy(values, mergeHistories[M, I, Vector[Double]](historyAge, history)(historySize)) apply filterNaN(population, aggregated(history.get, aggregation))
-      ranks <- paretoRankingMinAndCrowdingDiversity[M, I](aggregated(history.get, aggregation)) apply cloneRemoved
+      ranks <- paretoRankingMinAndCrowdingDiversity[M, I](aggregated(history.get, aggregation,embedding)) apply cloneRemoved
       elite = keepHighestRanked(cloneRemoved, ranks, mu)
     } yield elite
   }

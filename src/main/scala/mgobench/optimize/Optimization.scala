@@ -21,7 +21,7 @@ trait Optimization {
 
   def name: String
 
-  def resultStep: Int = 1000
+  //def resultStep: Int = 1000
 
 }
 
