@@ -3,6 +3,8 @@ package mgobench.optimize.ga
 import mgobench.optimize.Optimization
 import mgobench.problem.Problem
 import mgobench.result.Result
+import mgobench.utils._
+
 import mgo.algorithm.GenomeVectorDouble._
 import mgo._
 import algorithm._
@@ -25,8 +27,22 @@ import scala.language.higherKinds
 case class NSGA2(
                   lambda: Int,
                   mu: Int,
+
+                  /**
+                    * Number of repets for static sampling
+                    */
                   nrepets: Int,
+
+                  /**
+                    * Generations
+                    */
                   generations: Int,
+
+                  /**
+                    * how the static sampling aggregation is done
+                    *  \in {avg,avgCI}
+                    */
+                  aggregType: String = "avg",
                   rng: scala.util.Random = new scala.util.Random
                 ) extends Optimization {
 
@@ -82,11 +98,16 @@ object NSGA2 {
       */
     def apply(nsga2: NSGA2, problem: Problem): NSGA2Instance = {
       NSGA2Instance(
-        nsga2.mu,nsga2.lambda,
+        nsga2.mu,
+        nsga2.lambda,
         problem.boundaries,
         // FIXME possible uncertainty is not taken into account, not "fair" with the adaptive noisy nsga2
         // should provide that as an option ?
-        x => (1 to nsga2.nrepets).map{_=>problem.fitness(x)}.reduce(aggreg).map{_/nsga2.nrepets}
+        //x => (1 to nsga2.nrepets).map{_=>problem.fitness(x)}.reduce(aggreg).map{_/nsga2.nrepets}
+        x => nsga2.aggregType match {
+          case "avg" => aggregation((1 to nsga2.nrepets).toVector.map{_=>problem.fitness(x)})
+          case "avgCI" => aggregationWithCI((1 to nsga2.nrepets).toVector.map{_=>problem.fitness(x)})
+        }
       )
     }
   }

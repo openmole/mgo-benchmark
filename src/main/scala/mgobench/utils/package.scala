@@ -18,6 +18,30 @@ package object utils {
     math.sqrt(x.map{case xx => (xx - m)*(xx - m)}.sum/x.size)
   }
 
+  /**
+    * Simple average aggregation
+    * @param h
+    * @return
+    */
+  def aggregation(h: Vector[Vector[Double]]): Vector[Double] = {
+    //def sumvec(v1: Vector[Double],v2: Vector[Double]): Vector[Double] = v1.zip(v2).map{case (x1,x2)=>x1+x2}
+    h.map{_.map{ _ / h.length}}.reduce(ebesum)
+  }
+
+  /**
+    * Aggregation taking into variability with a simple gaussian CI
+    *   - how the CI is computed should be adaptative ? bootstrap CI ? estimate noise distribution shape ?
+    * @param h
+    * @return
+    */
+  def aggregationWithCI(h: Vector[Vector[Double]]): Vector[Double] = {
+    val sigmas = h.transpose.map(sd)
+    val avgfitness = h.map{_.map{ _ / h.length}}.reduce(ebesum)
+    //println(avgfitness.toString+"\n"+"+"+sigmas.toString)
+    avgfitness.zip(sigmas).map{case(f,s)=> f + (1.96*s)/math.sqrt(h.length)}
+  }
+
+
 
 }
 

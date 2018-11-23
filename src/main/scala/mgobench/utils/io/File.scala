@@ -6,8 +6,7 @@ import scala.io._
 
 object File {
 
-  /**
-    *
+  /***
     * @param d
     * @param file
     * @param delimiter
