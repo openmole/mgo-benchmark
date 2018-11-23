@@ -12,9 +12,13 @@ object File {
     * @param delimiter
     */
   def writeCSV[T <: Any](d: Array[Array[T]],file: String,delimiter: String): Unit = {
-    val writer = new BufferedWriter(new FileWriter(new File(file)))
-    d.foreach{case r => writer.write(r.mkString(delimiter));writer.newLine()}
-    writer.close()
+    try {
+      val writer = new BufferedWriter(new FileWriter(new File(file)))
+      d.foreach { case r => writer.write(r.mkString(delimiter)); writer.newLine() }
+      writer.close()
+    }catch {
+      case _: Throwable => println("Error when writing to file "+file)
+    }
   }
 
   def readCSV(f: String, delimiter: String): Array[Array[String]] = {
