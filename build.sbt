@@ -27,6 +27,7 @@ libraryDependencies += "net.cilib" %% "cilib-ga" % "2.0.1-30-g5ca4090"
 libraryDependencies += "net.cilib" %% "cilib-pso" % "2.0.1-30-g5ca4090"
 libraryDependencies += "net.cilib" %% "benchmarks" % "0.1.1"
 
+libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1"
 
 
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "2.10.4"
