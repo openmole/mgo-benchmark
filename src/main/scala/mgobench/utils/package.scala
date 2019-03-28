@@ -3,15 +3,45 @@ package mgobench
 package object utils {
 
 
-  /**
-    * Decorator for element by element sum
-    * @param v
-    */
-  implicit class Ebesum(v: Vector[Double]){
-    def +(v2: Vector[Double]): Vector[Double] = v.zip(v2).map{case(x1,x2)=>x1+x2}
+  object implicits {
+
+    /**
+      * Decorator double vector operations
+      * @param v
+      */
+    implicit class VectorDecorator(v: Vector[Double]) {
+      //EbeSumDecorator
+      def +(v2: Vector[Double]): Vector[Double] = v.zip(v2).map { case (x1, x2) => x1 + x2 }
+
+      // EBEMinusDecorator
+      def -(v2: Vector[Double]): Vector[Double] = v.zip(v2).map{case (x1,x2) => x1 - x2}
+
+      // RightScalarMultiplicationDecorator
+      def *(alpha: Double): Vector[Double] = v.map(_*alpha)
+
+      // ScalarProductDecorator
+      def x(v2: Vector[Double]): Double = v.zip(v2).map{case (x1,x2) => x1*x2}.sum
+    }
+
+    implicit class LeftScalarMultiplicationDecorator(alpha: Double) {
+      def *(v: Vector[Double]): Vector[Double] = v.map{_*alpha}
+    }
+
+    /**
+      * Matrix decorator using math3 commons -> useful ? (multiple conversions will deteriorate performances
+      * @param m
+      */
+    implicit class MatrixDecorator(m: Vector[Vector[Double]]) {
+
+    }
+
+
+
   }
 
-  implicit def ebesum(v1: Vector[Double],v2: Vector[Double]): Vector[Double] = v1 + v2
+  import implicits._
+
+  def ebesum(v1: Vector[Double], v2: Vector[Double]): Vector[Double] = v1 + v2
 
   def sd(x: Vector[Double]): Double = {
     val m = x.sum/x.size

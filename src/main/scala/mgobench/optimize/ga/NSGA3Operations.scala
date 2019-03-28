@@ -43,12 +43,32 @@ object NSGA3Operations {
   /**
     * compute auto ref points on the simplex
     *   (called at initialization)
-    * @param number
+    * @param divisions number of segments on each simplex bord line
+    * @param dimension dimension of the space
     * @return
     */
-  def simplexRefPoints(number: Int,dimension: Int): Vector[Vector[Double]] = {
-    // FIXME return h ~ n for now (basis vector) -> implement systematic distribution using number of divisions
-    Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1 else 0}}
+  def simplexRefPoints(divisions: Int,dimension: Int): Vector[Vector[Double]] = {
+    // this returns h ~ n for now (basis vector) -> implement systematic distribution using number of divisions
+    //Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1 else 0}}
+
+    // BRUTE FORCE ALGO - surely exists much better
+    val basis = Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1.0 else 0.0}}
+
+    def linePoints(ei: Vector[Double],ej: Vector[Double],ek: Vector[Double],k: Double,l: Double): Vector[Double] = {
+      import mgobench.utils.implicits._
+      ei + (k*ej) + (k*ek) // TODO finish
+    }
+
+    for {
+      ei <- basis
+      ej <- basis
+      ek <- basis
+      k <- 0.0 to divisions.toDouble by 1/divisions.toDouble
+      l <- 0 to k
+    } yield {
+      linePoints(ei,ej,ek,k,l)
+    }.toSet.//reduce using a set
+      toVector
   }
 
 
