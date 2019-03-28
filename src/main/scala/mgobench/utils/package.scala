@@ -21,7 +21,10 @@ package object utils {
 
       // ScalarProductDecorator
       def x(v2: Vector[Double]): Double = v.zip(v2).map{case (x1,x2) => x1*x2}.sum
+
+      def norm: Double = math.sqrt(v.map{x => x*x}.sum)
     }
+
 
     implicit class LeftScalarMultiplicationDecorator(alpha: Double) {
       def *(v: Vector[Double]): Vector[Double] = v.map{_*alpha}
@@ -40,6 +43,8 @@ package object utils {
   }
 
   import implicits._
+
+  def norm(v: Vector[Double]): Double = v.norm
 
   def ebesum(v1: Vector[Double], v2: Vector[Double]): Vector[Double] = v1 + v2
 

@@ -56,7 +56,12 @@ object NSGA3Operations {
 
     def linePoints(ei: Vector[Double],ej: Vector[Double],ek: Vector[Double],k: Double,l: Double): Vector[Double] = {
       import mgobench.utils.implicits._
-      ei + (k*ej) + (k*ek) // TODO finish
+      if(k==0.0) ei else {
+        val o = ei + (k * (ej - ei))
+        val d = ei + (k * (ek - ei))
+        val n = (o - d).norm
+        o + ((l * n / k) * (o - d))
+      }
     }
 
     for {
