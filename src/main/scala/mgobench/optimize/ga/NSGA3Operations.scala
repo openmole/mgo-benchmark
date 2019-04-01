@@ -33,10 +33,13 @@ object NSGA3Operations {
   //type References = Either[Int,Vector[Vector[Double]]]
   // type References = (Vector[Vector[Double]],ReferenceType)
   sealed trait References
+  object References{
+    def number_of_points(r: References): Int = r match {case UserDefined(references) => references.length; case Auto(_, references) => references.length}
+  }
   case class UserDefined(references: Vector[Vector[Double]]) extends References
-  case class Auto(number: Int, references: Vector[Vector[Double]]) extends References
+  case class Auto(divisions: Int, references: Vector[Vector[Double]]) extends References
   object Auto {
-    def apply(number: Int,dimension: Int): Auto = Auto(number,simplexRefPoints(number,dimension))
+    def apply(divisions: Int,dimension: Int): Auto = Auto(divisions,simplexRefPoints(divisions,dimension))
   }
 
 
