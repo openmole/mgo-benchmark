@@ -32,14 +32,32 @@ object NSGA3Operations {
     */
   //type References = Either[Int,Vector[Vector[Double]]]
   // type References = (Vector[Vector[Double]],ReferenceType)
-  sealed trait References
-  object References{
-    def number_of_points(r: References): Int = r match {case UserDefined(references) => references.length; case Auto(_, references) => references.length}
+  sealed trait References{
+    def references: Vector[Vector[Double]]
   }
-  case class UserDefined(references: Vector[Vector[Double]]) extends References
-  case class Auto(divisions: Int, references: Vector[Vector[Double]]) extends References
-  object Auto {
-    def apply(divisions: Int,dimension: Int): Auto = Auto(divisions,simplexRefPoints(divisions,dimension))
+  object References{
+
+    def number_of_points(r: References): Int = r match {
+      case ReferencePoints(references) => references.length;
+      case AutoReferences(_,_) => 0 // FIXME depends on dimension !
+    }
+
+    def computeReferences(r:References,dimension: Int): ReferencePoints = r match {
+      case ReferencePoints(references) => ReferencePoints(references)
+      case AutoReferences(divisions,_) => ReferencePoints(simplexRefPoints(divisions,dimension))
+    }
+
+  }
+  case class ReferencePoints(override val references: Vector[Vector[Double]]) extends References
+
+
+  //case class AutoReferences(divisions: Int, references: Vector[Vector[Double]]) extends References
+  // auto ref can be computed only when the problem (hence the dimension) is known)
+  case class AutoReferences(divisions: Int,override val references: Vector[Vector[Double]]=Vector.empty) extends References
+
+  object AutoReferences {
+    //def apply(divisions: Int,dimension: Int): AutoReferences = AutoReferences(divisions,simplexRefPoints(divisions,dimension))
+
   }
 
 
@@ -51,6 +69,9 @@ object NSGA3Operations {
     * @return
     */
   def simplexRefPoints(divisions: Int,dimension: Int): Vector[Vector[Double]] = {
+
+    println("Computing simplex reference points with "+divisions+" points in dimension "+dimension)
+
     // this returns h ~ n for now (basis vector) -> implement systematic distribution using number of divisions
     //Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1 else 0}}
 
@@ -72,7 +93,7 @@ object NSGA3Operations {
       ej <- basis
       ek <- basis
       k <- 0.0 to divisions.toDouble by 1/divisions.toDouble
-      l <- 0 to k
+      l <- 0.0 to k by 1.0
     } yield {
       linePoints(ei,ej,ek,k,l)
     }.toSet.//reduce using a set
@@ -116,7 +137,8 @@ object NSGA3Operations {
     for {
       //ranks <- paretoRankingMinAndCrowdingDiversity[M, I](fitness) apply population
       //offspring <- breeding repeat population.size//((lambda + 1) / 2)
-      offspring: M[Vector[(Vector[Double],Vector[Double])]] <- breeding repeat population.size
+      //offspring: M[Vector[(Vector[Double],Vector[Double])]] <- breeding repeat population.size
+      offspring <- breeding repeat population.size
       offspringGenomes = offspring.flatMap {
         case (o1, o2) =>
           def gv1 = o1.map(tools.clamp(_))
@@ -243,7 +265,7 @@ object NSGA3Operations {
                             fitness: I => Vector[Double],
                             references: References,
                            // size of elite is by default pop size / 2 (doubling population in breeding)
-                            mu: Vector[I] => Int = _.size / 2
+                            mu: Vector[I] => Int = {case i: Vector[I] => i.size / 2 }
                            ): Vector[I] = {
     val allfronts = successiveFronts(population,fitness)
     val fronts = allfronts.map{_._1}

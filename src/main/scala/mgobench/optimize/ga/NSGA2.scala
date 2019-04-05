@@ -24,6 +24,15 @@ import scala.language.higherKinds
 //import scala.util.Random
 
 
+/**
+  * NSGA2 optimizer
+  * @param lambda
+  * @param mu
+  * @param nrepets
+  * @param generations
+  * @param aggregType
+  * @param rng
+  */
 case class NSGA2(
                   lambda: Int,
                   mu: Int,
@@ -77,6 +86,13 @@ object NSGA2 {
   }
 
 
+  /**
+    * An instance of the algorithm for a given fitness
+    * @param mu
+    * @param lambda
+    * @param continuous
+    * @param fitness
+    */
   case class NSGA2Instance(
                             mu: Int,
                             lambda: Int,

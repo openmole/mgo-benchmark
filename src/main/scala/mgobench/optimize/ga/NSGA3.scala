@@ -2,22 +2,21 @@
 package mgobench.optimize.ga
 
 import mgobench.optimize.Optimization
-import mgobench.optimize.ga.NSGA3Operations.References
+import mgobench.optimize.ga.NSGA3Operations._
 import mgobench.problem.Problem
 import mgobench.result.Result
 import mgobench.utils.aggregation
 import mgo._
-import algorithm._
-import ranking._
-import tools._
-import breeding._
-import elitism._
-import contexts._
+import mgo.algorithm._
+import mgo.ranking._
+import mgo.breeding._
+import mgo.elitism._
+import mgo.contexts._
 import cats.data._
 import cats.implicits._
 import freedsl.dsl._
 import mgobench.problem.coco.CocoProblem
-import org.apache.commons.math3.optimization.direct.CMAESOptimizer.PopulationSize
+
 
 case class NSGA3 (
                    /**
@@ -34,12 +33,12 @@ case class NSGA3 (
                    /**
                      * reference points
                      */
-                   referencePoints: References,
+                   referencePoints: References = AutoReferences(1),
 
                    /**
                      * number of repets to be used in static sampling setting
                      */
-                   repetitions: Int,
+                   repetitions: Int = 1,
 
                    /**
                      * aggregation
@@ -86,9 +85,16 @@ object NSGA3 {
   }
 
 
+  /**
+    * Instance of the algorithm on a given fitness
+    * @param popSize
+    * @param referencePoints
+    * @param continuous
+    * @param fitness
+    */
   case class NSGA3Instance(
                             popSize: Int,
-                            referencePoints: References,
+                            referencePoints: ReferencePoints,
                             continuous: Vector[C],
                             fitness: Vector[Double] => Vector[Double]
                           )
@@ -96,7 +102,10 @@ object NSGA3 {
   object NSGA3Instance {
 
     /**
-      * Random aggregation is done in the instance fitness
+      * Construct a deterministic nsga3 instance :
+      *  - fitness is aggregated
+      *  - reference points are computed here
+      *
       * @param nsga2
       * @param problem
       * @return
@@ -104,7 +113,7 @@ object NSGA3 {
     def apply(nsga3: NSGA3, problem: Problem): NSGA3Instance = {
       NSGA3Instance(
         nsga3.popSize,
-        nsga3.referencePoints,
+        References.computeReferences(nsga3.referencePoints,problem.dimension),
         problem.boundaries,
         x => nsga3.aggregation((1 to nsga3.repetitions).toVector.map{_=>problem.fitness(x)})
       )
