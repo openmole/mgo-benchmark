@@ -61,12 +61,21 @@ package object test {
     val b: Vector[C] = Vector(C(0.0,1.0),C(0.0,1.0))
 
     val iterations = 10000
-    val res = Benchmark.benchmark(Seq(mgobench.optimize.ga.NSGA3(popSize = 100,generations = iterations,referencePoints = AutoReferences(2))),
+    val res = Benchmark.benchmark(Seq(mgobench.optimize.ga.NSGA3(
+        popSize = 100,
+        generations = iterations,
+        referencePoints = AutoReferences(3))
+      ),
       nBootstraps = 1,
       suite = FitnessSuite(f,b)
     )
 
     println(res.mkString("\n"))
+  }
+
+
+  def testNSGA3ReferencePoints(): Unit = {
+
   }
 
 

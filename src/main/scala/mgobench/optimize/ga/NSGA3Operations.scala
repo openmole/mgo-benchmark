@@ -89,20 +89,25 @@ object NSGA3Operations {
       }
     }
 
+    // tricking comparison of vectors
     case class Point(point: Vector[Double])
-    def uniquePoints(x: Vector[Vector[Double]]):Vector[Vector[Double]] = {
-      x.map(Point(_)).distinct.map(_.point)
+    def uniquePoints(x: Seq[Vector[Double]]):Vector[Vector[Double]] = {
+      x.map(Point(_)).distinct.map(_.point).toVector
     }
 
     // FIXME check algo p=2 ≠ p>=3 ?
     uniquePoints(for {
-      ei <- basis
-      ej <- basis.filter(!_.equals(ei))
-      ek <- basis
-      k <- 0.0 to divisions.toDouble//(divisions.toDouble - 1.0) by 1/divisions.toDouble
-      l <- 0.0 to k by 1.0
+      //ei <- basis.take(basis.size-1)
+      //ej <- basis.filter(!_.equals(ei))
+      // ek <- basis.filter(!_.equals(ei))
+      i <- 0 to basis.size - 2 by 1
+      j <- i + 1 to basis.size - 1 by 1
+      k <- i + 1 to basis.size - 1 by 1
+      ei = basis(i);ej=basis(j);ek=basis(k)
+      kk <- 0.0 to 1.0 by 1/divisions.toDouble
+      l <- 0.0 to kk by 1.0
     } yield {
-      linePoint(ei,ej,ek,k,l)
+      linePoint(ei,ej,ek,kk,l)
     })
   }
 
