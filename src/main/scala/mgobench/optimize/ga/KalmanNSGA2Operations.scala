@@ -15,7 +15,7 @@ import mgo.breeding._
 import mgo.dominance.nonStrictDominance
 import monocle.macros._
 import shapeless._
-import mgobench.utils._
+import mgobench.utils.implicits._
 
 object KalmanNSGA2Operations {
 
@@ -59,6 +59,8 @@ object KalmanNSGA2Operations {
                                                             lambda: Int,
                                                             cloneProbability: Double
                                                           ): Breeding[M, I, G] = Breeding { population =>
+    // FIXME implicit must be imported at this level
+    import mgobench.utils.implicits._
     for {
       ranks <- paretoRankingMinAndCrowdingDiversity[M, I](i=>fitness(i)+uncertainty(i)) apply population
       breeding = applyOperators[M, I, Vector[Double]](crossover, mutation, tournament[M, I, (Lazy[Int], Lazy[Double])](ranks), genome andThen genomeValues) apply population

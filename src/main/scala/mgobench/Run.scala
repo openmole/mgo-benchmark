@@ -3,7 +3,8 @@ package mgobench
 
 object Run extends App {
 
-  testBenchmark()
+  // test moved to Test
+  //testBenchmark()
   //testKalmanGA()
   //testNoisyGA()
   //testPSO()

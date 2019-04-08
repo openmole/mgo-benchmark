@@ -70,7 +70,7 @@ object NSGA3 {
     val prevevals = problem.evaluations
     val instance = NSGA3Instance(nsga3,problem)
     def evolution[M[_]: Generation: Random: cats.Monad: StartTime: IO] = instance.until(afterGeneration(nsga3.generations)).
-      //trace { (s, is) =>if(s.generation%1000==0) {println(s.generation)}}.
+      trace { (s, is) =>if(s.generation%2==0) {println(s.generation)}}.
       evolution
     val (finalState,finalPopulation) = (run(nsga3.rng) { imp => import imp._ ; evolution[DSL].eval})
     val res : Vector[NSGA3.Result] = result(finalPopulation,instance.continuous)
@@ -111,9 +111,11 @@ object NSGA3 {
       * @return
       */
     def apply(nsga3: NSGA3, problem: Problem): NSGA3Instance = {
+      val refPoints = References.computeReferences(nsga3.referencePoints,problem.dimension)
+      println("Reference points for NSGA3 = "+refPoints)
       NSGA3Instance(
         nsga3.popSize,
-        References.computeReferences(nsga3.referencePoints,problem.dimension),
+        refPoints,
         problem.boundaries,
         x => nsga3.aggregation((1 to nsga3.repetitions).toVector.map{_=>problem.fitness(x)})
       )
@@ -122,8 +124,12 @@ object NSGA3 {
 
 
 
-  def initialGenomes[M[_]: cats.Monad: Random](populationSize: Int, continuous: Vector[C]) =
-    CDGenome.initialGenomes[M](populationSize, continuous, Vector.empty)
+  def initialGenomes[M[_]: cats.Monad: Random](populationSize: Int, continuous: Vector[C]) ={
+    println("initial genomes")
+    val initGenomes =CDGenome.initialGenomes[M](populationSize, continuous, Vector.empty)
+    initGenomes
+  }
+
 
   def breeding[M[_]: Generation: Random: cats.Monad]: Breeding[M, Individual, Genome] =
     NSGA3Operations.breeding[M, Individual, Genome](

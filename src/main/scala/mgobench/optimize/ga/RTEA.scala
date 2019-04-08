@@ -76,11 +76,18 @@ object RTEA {
 
   def initialGenomes[M[_]: cats.Monad: Random](lambda: Int, continuous: Vector[C]) = CDGenome.initialGenomes[M](lambda, continuous, Vector.empty)
 
-  def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual =
+  /*def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual =
+    expression(d => fitness(d), continuous)
+*/
+  def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): Genome => Individual =
     expression(d => fitness(d), continuous)
 
 
-  def step[M[_]: cats.Monad: Random,Individual,Genome]: Kleisli[M,Vector[Individual],Vector[Individual]] = Kleisli {population => population}
+  def step[M[_]: cats.Monad: Random,Individual,Genome](size: Int): Kleisli[M,Vector[Individual],Vector[Individual]] = /*Kleisli[M,Vector[Individual],Vector[Individual]] {
+    population =>
+      population.pure[M]
+  }*/
+    mgo.elitism.randomO(size)
 
 
   def state[M[_]: cats.Monad: StartTime: Random: Generation] = mgo.algorithm.state[M, Unit](())
@@ -96,7 +103,7 @@ object RTEA {
           initialGenomes[M](t.initPopSize, t.continuous),
           expression(t.fitness, t.continuous))
       override def step(t: RTEAInstance) =
-        step[M, Individual, Genome]()
+        RTEA.step[M, Individual, Genome](t.initPopSize)
       override def state = RTEA.state[M]
     }
 
