@@ -70,10 +70,14 @@ object NSGA3Operations {
     def /(f: Fraction): Fraction = Fraction(n*f.d,d*f.n)
     def *(p: Point): Point = Point(p.point.map{_*this})
     def toDouble: Double = n.toDouble/d.toDouble
+    def isPositive: Boolean = (n>=0&&d>=0)||(n<=0&&d<=0)
   }
   object Fraction {
+    val zero = Fraction(0,1)
+    val one = Fraction(1,1)
     def apply(x: Int): Fraction = Fraction(x,1)
     def apply(n: Int,d: Int): Fraction = {
+      // sign always at numerator the way fractions are constructed ?
       val gcd = ArithmeticUtils.gcd(n, d)
       Fraction((n / gcd).toInt, (d / gcd).toInt,true)
     }
@@ -82,6 +86,73 @@ object NSGA3Operations {
     def +(p: Point): Point = Point(point.zip(p.point).map{case(f1,f2)=>f1+f2})
     def -(p: Point): Point = Point(point.zip(p.point).map{case(f1,f2)=>f1-f2})
     def toDoubleVector: Vector[Double] = point.map(_.toDouble)
+    def embedded(i: Int): Point = Point((0 to i-1 by 1).map{i => point(i)}.toVector ++ Vector(Fraction.zero) ++  (i until point.size by 1).map{i => point(i)}.toVector)
+    //def isPositive: Boolean = point.map{case Fraction(n,_,_) => n>0}.reduce(_&_)
+    def isPositive: Boolean = point.map{_.isPositive}.reduce(_&&_)
+    def isOnSimplex: Boolean = (point.reduce(_+_) == Fraction.one)&&isPositive // not the full simplex
+  }
+
+  case class DiscreteUnitSimplex(
+                                dimension: Int,
+                                divisions: Int,
+                          /**
+                            * discrete point in the simplex
+                            */
+                          points: Vector[Point]//,
+
+                                /**
+                                  * n-1 generator vectors of dim n
+                                  */
+                          //generators: Vector[Point]
+                        ) {
+    def embeddedPoints(i : Int): Vector[Point] = points.map(_.embedded(i))
+  }
+
+  object DiscreteUnitSimplex {
+
+    def twoDimSimplex(divisions: Int): DiscreteUnitSimplex = {
+      val coords = (0 to divisions by 1).map{Fraction(_,divisions)}
+      val points = coords.zip(coords.reverse).map{case (f1,f2) => Point(Vector(f1,f2))}.toVector
+      //val generator = points(1) - points(0)
+      //DiscreteUnitSimplex(2,divisions,points,Vector(generator))
+      DiscreteUnitSimplex(2,divisions,points)
+    }
+
+   // def embeddedGenerators(simplex: DiscreteUnitSimplex,direction: Int): Vector[Point] = simplex.generators.map(_.embedded(direction))
+
+    /**
+      * recursive constructor
+      * @param dimension
+      * @param divisions
+      * @return
+      */
+    def apply(dimension: Int, divisions: Int): DiscreteUnitSimplex = {
+      dimension match {
+        case 2 => twoDimSimplex(divisions)
+        case _ => {
+          val prevSimplex = DiscreteUnitSimplex(dimension - 1,divisions)
+          //val allgens: Vector[Point] = (0 until dimension by 1).toVector.flatMap(embeddedGenerators(prevSimplex,_))
+          //  all k values for all generators is exponential in p^{n^2} -> rapidly dead
+          // => embedd only one prev dim simplex
+          /*
+           val points = (0 to divisions by 1).toVector.map{ k => Point(Vector(Fraction(k,divisions))++Vector.fill(dimension - 1)(Fraction.zero))}.flatMap{
+              p =>
+                prevSimplex.points.map(_.embedded(0) + p)
+            }.filter(_.isOnSimplex)
+          )*/
+          val emb0 = prevSimplex.embeddedPoints(0)
+          val emb1 = prevSimplex.embeddedPoints(1)
+          val origin = emb0(0)
+          val points = (for {
+            vi <- emb0.map(_ - origin)
+            vj <- emb1.map(_ - origin)
+          } yield origin + vi + vj).filter(_.isOnSimplex).distinct
+
+          DiscreteUnitSimplex(dimension,divisions,points)
+        }
+      }
+    }
+
   }
 
   /**
@@ -94,7 +165,11 @@ object NSGA3Operations {
   def simplexRefPoints(divisions: Int,dimension: Int): Vector[Vector[Double]] = {
 
     println("Computing simplex reference points with "+divisions+" divisions in dimension "+dimension)
-
+    val start = System.currentTimeMillis()
+    val res = DiscreteUnitSimplex(dimension,divisions).points.map{_.toDoubleVector}
+    println("n = "+dimension+" ; p = "+divisions+" ; t = "+(System.currentTimeMillis() - start))
+    res
+    /*
     // this returns h ~ n for now (basis vector) -> implement systematic distribution using number of divisions
     //Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1 else 0}}
 
@@ -111,16 +186,6 @@ object NSGA3Operations {
       }
     }
 
-
-
-    //object Point {def apply(x: Vector[Int]): Point = Point(x.map(Fraction(_)))}
-    //object Point{def apply(p: Vector[Double]): Point = Point(p.map{x=>math.floor(x*100000)})}
-    //def uniquePoints(x: Seq[(Vector[Double],Vector[Double])]):Vector[Vector[Double]] = {
-    //  x.map(xx => Point(xx._2)).distinct.map(_.point).toVector
-    //}
-    /*def uniquePoints(x: Seq[Vector[Double]]):Vector[Vector[Double]] = {
-      x.map(Point(_)).distinct.map(_.point.map{_/100000}).toVector
-    }*/
 
     /**
       * basis vector
@@ -148,6 +213,7 @@ object NSGA3Operations {
     }).distinct.toVector
 
     fracpoint.map(_.toDoubleVector)
+    */
   }
 
 

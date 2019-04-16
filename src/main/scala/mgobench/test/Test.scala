@@ -86,7 +86,7 @@ package object test {
     // dimension + divisions
     val res = (for {
       dim <- 2 to 10 by 1
-      p <- 1 to 10 by 1
+      p <- 1 to 5 by 1
       expectedNumber = CombinatoricsUtils.binomialCoefficient(dim + p - 1,p)
       points = NSGA3Operations.simplexRefPoints(p,dim)
     } yield {
@@ -97,21 +97,22 @@ package object test {
 
     //println(res)
     println("Cum error = "+res.map{r => math.abs(r._2._1 - r._2._2)}.sum)
-    println(res.filter(r => r._2._1 != r._2._2).size)
+    println("Num of errors = "+res.filter(r => r._2._1 != r._2._2).size)
 
-    println(res.filter(r => r._2._1 != r._2._2).map(_._1))
+    println(res.filter(r => r._2._1 != r._2._2).map(r=> (r._1,r._2._1,r._2._2)))
 
     //println(res.filter(_._1._1==3))
-    //println(res((3,3)))
+    //println(res((10,5)))
     //println(res(2,1))
     // failing for p=4, dim >= 4 ?
     //println(res(5,6))
     //import mgobench.utils.implicits._
     //println(res(4,4)._3.reduce(_+_))
 
-    println(resMap((10,10)))
-    println(containsBasis(resMap((4,4))._3,4))
-    println(containsAxis(resMap((4,4))._3,4,4))
+    println(resMap((10,5)))
+    //println(resMap((3,2)))
+    //println(containsBasis(resMap((4,4))._3,4))
+    //println(containsAxis(resMap((4,4))._3,4,4))
 
     //println(missingPoints(resMap((4,4))._3,axis(4,4)))
     //println(axis(4,4).size)
