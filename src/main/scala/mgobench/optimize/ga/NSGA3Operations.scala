@@ -15,6 +15,7 @@ import freedsl.tool._
 import mgo.dominance.{Dominance, nonStrictDominance}
 import shapeless._
 import org.apache.commons.math3.linear._
+import org.apache.commons.math3.util._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -61,6 +62,28 @@ object NSGA3Operations {
   }
 
 
+  // tricking comparison of vectors
+  case class Fraction(n:Int,d:Int,reduced: Boolean){
+    def +(f: Fraction): Fraction = Fraction((n*f.d + d*f.n ),d*f.d)
+    def -(f: Fraction): Fraction = Fraction(n*f.d - d*f.n,d*f.d)
+    def *(f: Fraction): Fraction = Fraction(n*f.n,d*f.d)
+    def /(f: Fraction): Fraction = Fraction(n*f.d,d*f.n)
+    def *(p: Point): Point = Point(p.point.map{_*this})
+    def toDouble: Double = n.toDouble/d.toDouble
+  }
+  object Fraction {
+    def apply(x: Int): Fraction = Fraction(x,1)
+    def apply(n: Int,d: Int): Fraction = {
+      val gcd = ArithmeticUtils.gcd(n, d)
+      Fraction((n / gcd).toInt, (d / gcd).toInt,true)
+    }
+  }
+  case class Point(point: Vector[Fraction]){
+    def +(p: Point): Point = Point(point.zip(p.point).map{case(f1,f2)=>f1+f2})
+    def -(p: Point): Point = Point(point.zip(p.point).map{case(f1,f2)=>f1-f2})
+    def toDoubleVector: Vector[Double] = point.map(_.toDouble)
+  }
+
   /**
     * compute auto ref points on the simplex
     *   (called at initialization)
@@ -76,39 +99,55 @@ object NSGA3Operations {
     //Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1 else 0}}
 
     // BRUTE FORCE ALGO - surely exists much better
-    val basis = Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1.0 else 0.0}}
 
-    def linePoint(ei: Vector[Double],ej: Vector[Double],ek: Vector[Double],k: Double,l: Double): Vector[Double] = {
-      import mgobench.utils.implicits._
-      if(k==0.0) ei else {
-        val o = ei + (k * (ej - ei))
-        val d = ei + (k * (ek - ei))
-        //val n = (o - d).norm // error no need to renormalize
-        //o + ((l * n / k) * (o - d))
-        o + ((l / k) * (o - d))
+    def linePoint(ei: Point,ej: Point,ek: Point,k: Fraction,l: Fraction): Point = {
+      k match {
+        case Fraction(0,_,_) => ei
+        case Fraction(_,_,_) => {
+          val o = ei + (k * (ej - ei))
+          val d = ei + (k * (ek - ei))
+          o + ((l / k) * (d - o))
+        }
       }
     }
 
-    // tricking comparison of vectors
-    case class Point(point: Vector[Double])
-    def uniquePoints(x: Seq[Vector[Double]]):Vector[Vector[Double]] = {
-      x.map(Point(_)).distinct.map(_.point).toVector
-    }
 
-    // FIXME check algo p=2 ≠ p>=3 ?
-    uniquePoints(for {
+
+    //object Point {def apply(x: Vector[Int]): Point = Point(x.map(Fraction(_)))}
+    //object Point{def apply(p: Vector[Double]): Point = Point(p.map{x=>math.floor(x*100000)})}
+    //def uniquePoints(x: Seq[(Vector[Double],Vector[Double])]):Vector[Vector[Double]] = {
+    //  x.map(xx => Point(xx._2)).distinct.map(_.point).toVector
+    //}
+    /*def uniquePoints(x: Seq[Vector[Double]]):Vector[Vector[Double]] = {
+      x.map(Point(_)).distinct.map(_.point.map{_/100000}).toVector
+    }*/
+
+    /**
+      * basis vector
+      */
+    val basis = Vector.tabulate(dimension){i => Point(Vector.tabulate(dimension){j => if (j==i) Fraction(1) else Fraction(0)})}
+
+
+    val fracpoint: Vector[Point] = (for {
       //ei <- basis.take(basis.size-1)
       //ej <- basis.filter(!_.equals(ei))
       // ek <- basis.filter(!_.equals(ei))
       i <- 0 to basis.size - 2 by 1
       j <- i + 1 to basis.size - 1 by 1
-      k <- i + 1 to basis.size - 1 by 1
+      //k <- (i + 1 to basis.size - 1 by 1)//.filter(_!=j)
+      // to have all points all k values except j must be taken?
+      k <- (0 to (basis.size - 1) by 1).filter(_!=j)
       ei = basis(i);ej=basis(j);ek=basis(k)
-      kk <- 0.0 to 1.0 by 1/divisions.toDouble
-      l <- 0.0 to kk by 1.0
+      kk <- (0 to divisions by 1)
+      kfrac = Fraction(kk,divisions)//0.0 to 1.0 by 1/divisions.toDouble
+      l <- 0 to kk by 1
+      lfrac = Fraction(l,divisions)
     } yield {
-      linePoint(ei,ej,ek,kk,l)
-    })
+      //Vector(i,j,k,kk,l)++linePoint(ei,ej,ek,kk,l) // DEBUG
+      linePoint(ei,ej,ek,kfrac,lfrac)
+    }).distinct.toVector
+
+    fracpoint.map(_.toDoubleVector)
   }
 
 

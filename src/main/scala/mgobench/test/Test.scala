@@ -3,7 +3,7 @@ package mgobench.test
 import mgo.C
 import mgobench.{Benchmark, optimize}
 import mgobench.optimize.GradientDescent
-import mgobench.optimize.ga.NSGA3Operations.AutoReferences
+import mgobench.optimize.ga.NSGA3Operations._
 import mgobench.optimize.ga._
 import mgobench.optimize.pso.GCPSO
 import mgobench.problem.FitnessSuite
@@ -16,7 +16,8 @@ object Test extends App {
 
 
 
-  test.testNSGA3()
+  test.testNSGA3ReferencePoints
+  //test.testNSGA3()
 
 
 }
@@ -74,9 +75,64 @@ package object test {
   }
 
 
+  /**
+    * test generation of simplex points
+    */
   def testNSGA3ReferencePoints(): Unit = {
+    // first check : number of points
+
+    import org.apache.commons.math3.util._
+
+    // dimension + divisions
+    val res = (for {
+      dim <- 2 to 10 by 1
+      p <- 1 to 10 by 1
+      expectedNumber = CombinatoricsUtils.binomialCoefficient(dim + p - 1,p)
+      points = NSGA3Operations.simplexRefPoints(p,dim)
+    } yield {
+      (dim,p)->(expectedNumber,points.size,points)
+      //(dim,p)->(expectedNumber,points.size)
+    })
+    val resMap = res.toMap
+
+    //println(res)
+    println("Cum error = "+res.map{r => math.abs(r._2._1 - r._2._2)}.sum)
+    println(res.filter(r => r._2._1 != r._2._2).size)
+
+    println(res.filter(r => r._2._1 != r._2._2).map(_._1))
+
+    //println(res.filter(_._1._1==3))
+    //println(res((3,3)))
+    //println(res(2,1))
+    // failing for p=4, dim >= 4 ?
+    //println(res(5,6))
+    //import mgobench.utils.implicits._
+    //println(res(4,4)._3.reduce(_+_))
+
+    println(resMap((10,10)))
+    println(containsBasis(resMap((4,4))._3,4))
+    println(containsAxis(resMap((4,4))._3,4,4))
+
+    //println(missingPoints(resMap((4,4))._3,axis(4,4)))
+    //println(axis(4,4).size)
 
   }
+
+  def containsPoints(points: Vector[Vector[Double]],tocontain: Vector[Vector[Double]]): Boolean = tocontain.map(points.contains(_)).reduce(_&_)
+  def missingPoints(points: Vector[Vector[Double]],tocontain: Vector[Vector[Double]]): Vector[Vector[Double]] = tocontain.filter(!points.contains(_))
+
+  def containsBasis(points: Vector[Vector[Double]],dimension: Int): Boolean = {
+    val basis = Vector.tabulate(dimension){i => Point(Vector.tabulate(dimension){j => if (j==i) Fraction(1) else Fraction(0)})}
+    containsPoints(points,basis.map(_.toDoubleVector))
+  }
+
+  def axis(dimension: Int,divisions: Int): Vector[Vector[Double]] = Vector.tabulate(dimension){i => (1.0 to (divisions - 1) by 1.0).toVector.map{k => Vector.tabulate(dimension){j => if (j==i) k/divisions  else 0.0}}}.reduce(_++_)
+
+  def containsAxis(points: Vector[Vector[Double]],dimension: Int, divisions: Int): Boolean = {
+    // axis without extremities :
+     containsPoints(points,axis(dimension,divisions))
+  }
+
 
 
   def testNoisyGA(): Unit = {
