@@ -111,7 +111,8 @@ object NSGA3 {
       * @return
       */
     def apply(nsga3: NSGA3, problem: Problem): NSGA3Instance = {
-      val refPoints = References.computeReferences(nsga3.referencePoints,problem.dimension)
+      assert(problem.number_of_objectives>1,"nsga3 should not be used for monoobjective problems")
+      val refPoints = References.computeReferences(nsga3.referencePoints,problem.number_of_objectives)
       println("Reference points for NSGA3 = "+refPoints)
       NSGA3Instance(
         nsga3.popSize,

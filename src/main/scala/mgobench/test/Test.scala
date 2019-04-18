@@ -58,15 +58,19 @@ package object test {
   def testNSGA3(): Unit = {
     println("Test NSGA3")
 
-    def f(x: Vector[Double]): Vector[Double] = Vector(x(0)+x(1),1/(1+x(0))+x(1))
-    val b: Vector[C] = Vector(C(0.0,1.0),C(0.0,1.0))
+    //def f(x: Vector[Double]): Vector[Double] = Vector(x(0)+x(1),1/(1+x(0))+x(1))
+    // -> gives singular rotation matrices (expected as min at x = y for first objective ?)
+    def f(x: Vector[Double]): Vector[Double] = Vector(x(0),1/x(0))
+
+    //val b: Vector[C] = Vector(C(0.0,1.0),C(0.0,1.0))
+    val b: Vector[C] = Vector(C(0.1,10.0))
 
     val iterations = 10000
     val res = Benchmark.benchmark(Seq(
       mgobench.optimize.ga.NSGA3(
         popSize = 100,
         generations = iterations,
-        referencePoints = AutoReferences(3))
+        referencePoints = AutoReferences(90))
       ),
       nBootstraps = 1,
       suite = FitnessSuite(f,b)
