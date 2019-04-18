@@ -62,7 +62,13 @@ object NSGA3Operations {
   }
 
 
-  // tricking comparison of vectors
+  /**
+    * Body of fractions
+    *  - used for tricking comparison of vectors and have exact discrete points
+    * @param n
+    * @param d
+    * @param reduced
+    */
   case class Fraction(n:Int,d:Int,reduced: Boolean){
     def +(f: Fraction): Fraction = Fraction((n*f.d + d*f.n ),d*f.d)
     def -(f: Fraction): Fraction = Fraction(n*f.d - d*f.n,d*f.d)
@@ -82,6 +88,11 @@ object NSGA3Operations {
       Fraction((n / gcd).toInt, (d / gcd).toInt,true)
     }
   }
+
+  /**
+    * Fractional points
+    * @param point
+    */
   case class Point(point: Vector[Fraction]){
     def +(p: Point): Point = Point(point.zip(p.point).map{case(f1,f2)=>f1+f2})
     def -(p: Point): Point = Point(point.zip(p.point).map{case(f1,f2)=>f1-f2})
@@ -110,6 +121,11 @@ object NSGA3Operations {
 
   object DiscreteUnitSimplex {
 
+    /**
+      * basic case : two dimensional simplex
+      * @param divisions
+      * @return
+      */
     def twoDimSimplex(divisions: Int): DiscreteUnitSimplex = {
       val coords = (0 to divisions by 1).map{Fraction(_,divisions)}
       val points = coords.zip(coords.reverse).map{case (f1,f2) => Point(Vector(f1,f2))}.toVector
@@ -122,6 +138,9 @@ object NSGA3Operations {
 
     /**
       * recursive constructor
+      * two complementary hypersimplices are anough to generate the simplex in the next dimension
+      * (rough algorithm by filtering points - still a polynomial upper bound)
+      *
       * @param dimension
       * @param divisions
       * @return
@@ -131,15 +150,6 @@ object NSGA3Operations {
         case 2 => twoDimSimplex(divisions)
         case _ => {
           val prevSimplex = DiscreteUnitSimplex(dimension - 1,divisions)
-          //val allgens: Vector[Point] = (0 until dimension by 1).toVector.flatMap(embeddedGenerators(prevSimplex,_))
-          //  all k values for all generators is exponential in p^{n^2} -> rapidly dead
-          // => embedd only one prev dim simplex
-          /*
-           val points = (0 to divisions by 1).toVector.map{ k => Point(Vector(Fraction(k,divisions))++Vector.fill(dimension - 1)(Fraction.zero))}.flatMap{
-              p =>
-                prevSimplex.points.map(_.embedded(0) + p)
-            }.filter(_.isOnSimplex)
-          )*/
           val emb0 = prevSimplex.embeddedPoints(0)
           val emb1 = prevSimplex.embeddedPoints(1)
           val origin = emb0(0)
@@ -163,57 +173,11 @@ object NSGA3Operations {
     * @return
     */
   def simplexRefPoints(divisions: Int,dimension: Int): Vector[Vector[Double]] = {
-
-    println("Computing simplex reference points with "+divisions+" divisions in dimension "+dimension)
-    val start = System.currentTimeMillis()
+    //println("Computing simplex reference points with "+divisions+" divisions in dimension "+dimension)
+    //val start = System.currentTimeMillis()
     val res = DiscreteUnitSimplex(dimension,divisions).points.map{_.toDoubleVector}
-    println("n = "+dimension+" ; p = "+divisions+" ; t = "+(System.currentTimeMillis() - start))
+    //println("n = "+dimension+" ; p = "+divisions+" ; t = "+(System.currentTimeMillis() - start))
     res
-    /*
-    // this returns h ~ n for now (basis vector) -> implement systematic distribution using number of divisions
-    //Vector.tabulate(dimension){i => Vector.tabulate(dimension){j => if (j==i) 1 else 0}}
-
-    // BRUTE FORCE ALGO - surely exists much better
-
-    def linePoint(ei: Point,ej: Point,ek: Point,k: Fraction,l: Fraction): Point = {
-      k match {
-        case Fraction(0,_,_) => ei
-        case Fraction(_,_,_) => {
-          val o = ei + (k * (ej - ei))
-          val d = ei + (k * (ek - ei))
-          o + ((l / k) * (d - o))
-        }
-      }
-    }
-
-
-    /**
-      * basis vector
-      */
-    val basis = Vector.tabulate(dimension){i => Point(Vector.tabulate(dimension){j => if (j==i) Fraction(1) else Fraction(0)})}
-
-
-    val fracpoint: Vector[Point] = (for {
-      //ei <- basis.take(basis.size-1)
-      //ej <- basis.filter(!_.equals(ei))
-      // ek <- basis.filter(!_.equals(ei))
-      i <- 0 to basis.size - 2 by 1
-      j <- i + 1 to basis.size - 1 by 1
-      //k <- (i + 1 to basis.size - 1 by 1)//.filter(_!=j)
-      // to have all points all k values except j must be taken?
-      k <- (0 to (basis.size - 1) by 1).filter(_!=j)
-      ei = basis(i);ej=basis(j);ek=basis(k)
-      kk <- (0 to divisions by 1)
-      kfrac = Fraction(kk,divisions)//0.0 to 1.0 by 1/divisions.toDouble
-      l <- 0 to kk by 1
-      lfrac = Fraction(l,divisions)
-    } yield {
-      //Vector(i,j,k,kk,l)++linePoint(ei,ej,ek,kk,l) // DEBUG
-      linePoint(ei,ej,ek,kfrac,lfrac)
-    }).distinct.toVector
-
-    fracpoint.map(_.toDoubleVector)
-    */
   }
 
 
@@ -431,7 +395,7 @@ object NSGA3Operations {
         // indices of individuals in the last front
         val lastfrontinds = frontindices(lastfrontindex)
 
-        val provpop: Vector[I] = cumpops.tail(lastfrontindex - 1)
+        val provpop: Vector[I] = if (lastfrontindex > 0) cumpops.tail(lastfrontindex - 1) else Vector.empty
 
         // next candidate points to be drawn in lastfront, given ref points
         // -> normalize here
@@ -442,6 +406,7 @@ object NSGA3Operations {
         //implicit val rng = new util.Random
         val additionalPointsIndices = referenceNichingSelection[M](normfitnesses,normreferences,lastfrontinds,targetSize - provpop.size)//(rng=rng)
         val additionalPoints = population.zipWithIndex.filter{case (_,i) => additionalPointsIndices.contains(i)}.map{case (ind,_) => ind}
+        println("size of final elite population : "+provpop.size+" + "+additionalPoints.size)
         provpop++additionalPoints
       }
     }
@@ -533,49 +498,22 @@ object NSGA3Operations {
                                  selectionIndices: Vector[Int],
                                  pointsNumber: Int
                                ): Vector[Int] = {
-    println("Ref points = "+normalizedReferences)
-    val assocMap = associateReferencePoints(normalizedFitnesses,normalizedReferences)
-    println("association of ref points = "+assocMap)
-    var currentRefPoints: Seq[Int] = (0 until normalizedReferences.size) // indices of current ref points
-    var currentSelectionIndices = selectionIndices
-    //val refCounts = assocMap.toSeq.groupBy{case (_,(j,_)) => j}.toSeq.sortBy(_._1).map{case (_,s)=>s.size}
-    val refCount = new mutable.HashMap[Int,Int];for(j <- currentRefPoints){refCount.put(j,0)}
-    val toAdd = new ArrayBuffer[Int]
-    while (toAdd.length <= pointsNumber) {
-      // FIXME add random selection in case of same numbers
-      val jmin = refCount.toSeq.filter{case (j,rhoj)=> currentRefPoints.contains(j)}.minBy(_._2)
-      // points associated to min niche and in last front
-      val candidatePoints = assocMap.toSeq.filter{case (i,(j,d)) => currentSelectionIndices.contains(i)&j==jmin._2}
-      if(candidatePoints.size == 0) {
-        // remove this reference point
-        currentRefPoints = currentRefPoints.filter(_!=jmin._2)
-      }else {
-        var newpoint = 0
-        if(refCount(jmin._2)==0) {
-          newpoint = candidatePoints.minBy{case (i,(j,d))=>d}._1
-        }else{
-          //val randomIndex: Int = randomM.use(rng => rng.nextInt(candidatePoints.size)).asInstanceOf[Int]
-          //{} apply randomM.shuffle((0 to candidatePoints.size).toVector).map{_.take(1).head}
-          //val randomIndex: M[Int] = Random[M].randomElement((0 to candidatePoints.size).toVector)
-          val rng = new util.Random
-          val randomIndex = rng.nextInt(candidatePoints.size)
-          newpoint = candidatePoints(randomIndex)._1
-        }
-        toAdd.append(newpoint)
-        refCount.put(jmin._2,refCount(jmin._2)+1)
-        currentSelectionIndices = currentSelectionIndices.filter(i=> i!= newpoint)
-      }
-    }
-    toAdd.toVector
+    //println("Ref points = "+normalizedReferences)
+    println("Adding "+pointsNumber+" points among "+selectionIndices.size)
+    val assocMap = associateReferencePoints(normalizedFitnesses,normalizedReferences,selectionIndices) // associate points to references
+    //println("association of ref points = "+assocMap)
+    val (_,selected) = pointsSelection(assocMap,Vector.empty,pointsNumber)
+    selected.map{_._1}
   }
 
   /**
     * Compute reference lines, distances, and associate points to references
     * @param points
     * @param references
+    * @param selectionIndices filter final point on these indices
     * @return map point i => ref point j,distance
     */
-  def associateReferencePoints(points: Vector[Vector[Double]],references: Vector[Vector[Double]]): Map[Int,(Int,Double)] = {
+  def associateReferencePoints(points: Vector[Vector[Double]],references: Vector[Vector[Double]],selectionIndices: Vector[Int]): Map[Int,(Int,Double)] = {
     val refnormsquared = references.map{_.map{x => x*x}.sum}
     // FIXME unoptimized, shouldnt recreate the matrices at each run
     def proj(dim: Int,x: Vector[Double]): Vector[Double] = {
@@ -590,7 +528,25 @@ object NSGA3Operations {
         }
         val mindist = dists.min
         (ind,(dists.zipWithIndex.filter{case (d,_)=>d==mindist}.map{case (_,j)=>j}.head,mindist))
-    }.toMap
+    }.filter(p => selectionIndices.contains(p._1)).toMap
+  }
+
+  def pointsSelection(associationMap: Map[Int,(Int,Double)],selected: Vector[(Int,Int)],toselect: Int): (Map[Int,(Int,Double)],Vector[(Int,Int)]) = {
+    //println("Selecting "+toselect+" points from "+associationMap.toVector.size)
+    toselect match {
+      case n if n == 0 => (associationMap,selected)
+      case _ => {
+        //val refCount = selected.groupBy(_._2).map{g => (g._1,g._2.size)}
+        //val refCount = associationMap.toVector.groupBy(_._2._1).map{g => (g._1,g._2.size)} // ref with no count can not be in the refcount
+        val selectedRefCount = selected.groupBy(_._2).map{g => (g._1,g._2.size)}
+        val refCount = associationMap.map{_._2._1}.toVector.distinct.map{j => (j,selectedRefCount.getOrElse(j,0))}.toMap
+        val (jmin,_) = refCount.minBy(_._2) // index of ref point with minimal number of associated points
+        val candidatePoints = associationMap.filter{case (_,(j,_)) => j==jmin} // cannot be 0 the way it is constructed
+        //val newpointIndex = if(refCount(jmin)==0) candidatePoints.minBy{_._2._2}._1 else  candidatePoints.minBy{_._2._2}._1
+        val newpointIndex = candidatePoints.minBy{_._2._2}._1 // anyway take the min dist point
+        pointsSelection(associationMap.filter{_._1!=newpointIndex},selected++Vector((newpointIndex,jmin)),toselect - 1)
+      }
+    }
   }
 
 

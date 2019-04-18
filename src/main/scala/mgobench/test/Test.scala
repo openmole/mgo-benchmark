@@ -16,8 +16,8 @@ object Test extends App {
 
 
 
-  test.testNSGA3ReferencePoints
-  //test.testNSGA3()
+  //test.testNSGA3ReferencePoints
+  test.testNSGA3()
 
 
 }
@@ -62,7 +62,8 @@ package object test {
     val b: Vector[C] = Vector(C(0.0,1.0),C(0.0,1.0))
 
     val iterations = 10000
-    val res = Benchmark.benchmark(Seq(mgobench.optimize.ga.NSGA3(
+    val res = Benchmark.benchmark(Seq(
+      mgobench.optimize.ga.NSGA3(
         popSize = 100,
         generations = iterations,
         referencePoints = AutoReferences(3))
