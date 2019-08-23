@@ -9,7 +9,7 @@ package object utils {
       * Decorator double vector operations
       * @param v
       */
-    implicit class VectorDecorator(v: Vector[Double]) {
+    implicit class DoubleVectorDecorator(v: Vector[Double]) {
       //EbeSumDecorator
       def +(v2: Vector[Double]): Vector[Double] = v.zip(v2).map { case (x1, x2) => x1 + x2 }
 
@@ -23,7 +23,19 @@ package object utils {
       def x(v2: Vector[Double]): Double = v.zip(v2).map{case (x1,x2) => x1*x2}.sum
 
       def norm: Double = math.sqrt(v.map{x => x*x}.sum)
+
+
     }
+
+    implicit class VectorDecorator[A](v: Vector[A]) {
+      /**
+        * filter by indices
+        * @param indices
+        */
+      def filter[_](indices: Vector[Int]): Vector[A] = v.zipWithIndex.filter{case (_,i)=>indices.contains(i)}.map{_._1}
+    }
+
+    def filter[A](v: Vector[A],indices: Vector[Int]): Vector[A] = v.zipWithIndex.filter{case (_,i)=>indices.contains(i)}.map{_._1}
 
 
     implicit class LeftScalarMultiplicationDecorator(alpha: Double) {

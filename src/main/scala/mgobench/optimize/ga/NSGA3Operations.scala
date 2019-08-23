@@ -21,8 +21,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.higherKinds
 
-
-
+import mgobench.utils.implicits._
 
 object NSGA3Operations {
 
@@ -288,6 +287,7 @@ object NSGA3Operations {
   def successiveFrontsApproxNumberofDominating[I](population: Vector[I], fitness: I => Vector[Double]): Vector[(Vector[I],Vector[Vector[Double]])] = {
     // fitness evaluation is done here in number of dominating
     val (fitnesses,dominating) = numberOfDominatingAndFitnesses(fitness, population)
+
     population.zip(dominating).zip(fitnesses).groupBy{ case ((_,d),f) => d.value}.toVector.sortBy{_._1}.map{case (_,v) => (v.map{_._1._1},v.map{_._2})}
   }
 
@@ -302,6 +302,7 @@ object NSGA3Operations {
     */
   def numberOfDominatingAndFitnesses[I](fitness: I => Vector[Double], values: Vector[I], dominance: Dominance = nonStrictDominance): (Vector[Vector[Double]],Vector[Lazy[Int]]) = {
     val fitnesses = values.map(i => fitness(i))
+
     def ranks =
       fitnesses.zipWithIndex.map {
         case (v1, index1) =>
@@ -327,6 +328,11 @@ object NSGA3Operations {
     // evaluate all fitness and put in map so that function are not reevaluated at each front computation
     println("successive pareto fronts")
     val fitnesses = population.map(i => fitness(i))
+
+    // DEBUG ascii plot
+    //import org.sameersingh.scalaplot.Implicits._
+    //output(ASCII,org.sameersingh.scalaplot.Implicits.xyChart((fitnesses.map{_(0)},fitnesses.map{_(1)})))
+
     val fitnessmap = population.zip(fitnesses).toMap
     def compfitness: I => Vector[Double] = i => fitnessmap(i)
     //val frontnums = new mutable.HashMap[I,Lazy[Int]]
@@ -408,8 +414,9 @@ object NSGA3Operations {
         // niching in association to reference points ; selection according to it
         // needs last front indices
         //implicit val rng = new util.Random
-        val additionalPointsIndices = referenceNichingSelection[M](normfitnesses,normreferences,lastfrontinds,targetSize - provpop.size)//(rng=rng)
-        val additionalPoints = population.zipWithIndex.filter{case (_,i) => additionalPointsIndices.contains(i)}.map{case (ind,_) => ind}
+        //val additionalPointsIndices = referenceNichingSelection[M](normfitnesses,normreferences,lastfrontinds,targetSize - provpop.size)//(rng=rng)
+        //val additionalPoints = population.zipWithIndex.filter{case (_,i) => additionalPointsIndices.contains(i)}.map{case (ind,_) => ind}
+        val additionalPoints = referenceNichingSelection[M,I](filter[Vector[Double]](normfitnesses,lastfrontinds),filter[Vector[Double]](normreferences,lastfrontinds),filter[I](population,lastfrontinds),targetSize - provpop.size)
         println("size of final elite population : "+provpop.size+" + "+additionalPoints.size)
         provpop++additionalPoints
       }
@@ -441,15 +448,16 @@ object NSGA3Operations {
     * Translate to have ideal point at \vec{0} ; compute max points
     *
     * @param fitnesses
-    * @return (translated fitnesses , max points)
+    * @return (translated fitnesses , max points indices for each dimension)
     */
   def translateAndMaxPoints(fitnesses: Vector[Vector[Double]]): (Vector[Vector[Double]],Vector[Vector[Double]]) = {
     // TODO check if transpose has expected behavior
     val idealValues = fitnesses.transpose.map{_.min}
-    //println("mins = "+idealValues)
-    //println("maxs = "+fitnesses.transpose.map{_.max})
+    println("mins = "+idealValues)
+    println("maxs = "+fitnesses.transpose.map{_.max})
     val translated = fitnesses.map{_.zip(idealValues).map{case (f,mi) => f - mi}}
-    (translated,translated.transpose.map{v => translated(v.zipWithIndex.maxBy{case (d,_) => d}._2)})
+    assert(translated.flatten.min >= 0.0,"negative translated data")
+    (translated,translated.transpose.map{v => translated(v.zipWithIndex.minBy{case (d,_) => d}._2)})
   }
 
   /**
@@ -460,6 +468,8 @@ object NSGA3Operations {
   def simplexIntercepts(maxPoints: Vector[Vector[Double]]): Vector[Double] = {
     val firstPoint = maxPoints(0)
     val dim = firstPoint.size
+
+    // FIXME problem with translation here ?
     val translated: Vector[Vector[Double]] = maxPoints.map{_.zip(firstPoint).map{case (xij,x1j) => xij - x1j}}
     val baseChange: RealMatrix = MatrixUtils.createRealMatrix((Vector(firstPoint.map{case xj => - xj})++translated.tail).map{_.toArray}.toArray)
 
@@ -502,18 +512,25 @@ object NSGA3Operations {
     *          (population not needed at this stage)
     */
   // FIXME handle random generator through M
-  def referenceNichingSelection[M[_]: cats.Monad: Random](
+  def referenceNichingSelection[M[_]: cats.Monad: Random,I](
                                  normalizedFitnesses: Vector[Vector[Double]],
                                  normalizedReferences: Vector[Vector[Double]],
-                                 selectionIndices: Vector[Int],
+                                 //selectionIndices: Vector[Int],
+                                 population: Vector[I],
                                  pointsNumber: Int
-                               ): Vector[Int] = {
+                               ): Vector[I] = {
     //println("Ref points = "+normalizedReferences)
-    println("Adding "+pointsNumber+" points among "+selectionIndices.size)
-    val assocMap = associateReferencePoints(normalizedFitnesses,normalizedReferences,selectionIndices) // associate points to references
+    println("Adding "+pointsNumber+" points among "+population.size)
+    println(normalizedFitnesses)
+    // FIXME normalized fitnesses are wrong
+
+    val normFitnessMap = (population.zip(normalizedFitnesses)).toMap
+    val assocMap = associateReferencePoints(normalizedFitnesses,normalizedReferences,population) // associate points to references
     //println("association of ref points = "+assocMap)
-    val (_,selected) = pointsSelection(assocMap,Vector.empty,pointsNumber)(new util.Random)
+    val (finalAssocMap,selected) = pointsSelection(assocMap,Vector.empty,pointsNumber)(new util.Random)
     println("distinct niched ref points = "+selected.map{_._2}.distinct)
+    println("rel min x sel points = "+(selected.map(s => normFitnessMap(s._1)(0)).min))
+    println("rel min y sel points = "+(selected.map(s => normFitnessMap(s._1)(1)).min))
     selected.map{_._1}
   }
 
@@ -524,14 +541,14 @@ object NSGA3Operations {
     * @param selectionIndices filter final point on these indices
     * @return map point i => ref point j,distance
     */
-  def associateReferencePoints(points: Vector[Vector[Double]],references: Vector[Vector[Double]],selectionIndices: Vector[Int]): Map[Int,(Int,Double)] = {
+  def associateReferencePoints[I](points: Vector[Vector[Double]],references: Vector[Vector[Double]],population: Vector[I]): Map[I,(Int,Double)] = {
     val refnormsquared = references.map{_.map{x => x*x}.sum}
     // FIXME unoptimized, shouldnt recreate the matrices at each run
     def proj(dim: Int,x: Vector[Double]): Vector[Double] = {
       val w = MatrixUtils.createColumnRealMatrix(references(dim).toArray)
       w.multiply(MatrixUtils.createRowRealMatrix(x.toArray)).multiply(w).getColumn(0).map{_ / refnormsquared(dim)}.toVector
     }
-    points.zipWithIndex.map {
+    points.zip(population).map {
       case (p,ind) =>
         val dists = (0 until references.length).map {
           i =>
@@ -539,10 +556,10 @@ object NSGA3Operations {
         }
         val mindist = dists.min
         (ind,(dists.zipWithIndex.filter{case (d,_)=>d==mindist}.map{case (_,j)=>j}.head,mindist))
-    }.filter(p => selectionIndices.contains(p._1)).toMap
+    }.toMap
   }
 
-  def pointsSelection(associationMap: Map[Int,(Int,Double)],selected: Vector[(Int,Int)],toselect: Int)(implicit rng: util.Random): (Map[Int,(Int,Double)],Vector[(Int,Int)]) = {
+  def pointsSelection[I](associationMap: Map[I,(Int,Double)],selected: Vector[(I,Int)],toselect: Int)(implicit rng: util.Random): (Map[I,(Int,Double)],Vector[(I,Int)]) = {
     //println("Selecting "+toselect+" points from "+associationMap.toVector.size)
     toselect match {
       case n if n == 0 => (associationMap,selected)
@@ -555,10 +572,10 @@ object NSGA3Operations {
         val candidatePoints = associationMap.filter{case (_,(j,_)) => j==jmin} // cannot be 0 the way it is constructed
         //val newpointIndex = if(refCount(jmin)==0) candidatePoints.minBy{_._2._2}._1 else  candidatePoints.minBy{_._2._2}._1
         //val newpointIndex = candidatePoints.minBy{_._2._2}._1 // taking the min dist point leads to an overcrowding of some points only
-        val newpointIndex = if(refCount(jmin)==0) candidatePoints.toVector.minBy{_._2._2}._1 else {
+        val newpoint = if(refCount(jmin)==0) candidatePoints.toVector.minBy{_._2._2}._1 else {
           candidatePoints.toVector(rng.nextInt(candidatePoints.toVector.size))._1
         }
-          pointsSelection(associationMap.filter{_._1!=newpointIndex},selected++Vector((newpointIndex,jmin)),toselect - 1)
+          pointsSelection(associationMap.filter{_._1!=newpoint},selected++Vector((newpoint,jmin)),toselect - 1)
       }
     }
   }

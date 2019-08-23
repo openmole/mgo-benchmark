@@ -17,7 +17,10 @@ import cats.implicits._
 import freedsl.dsl._
 import mgobench.problem.coco.CocoProblem
 
-
+/**
+* Fieldsend, J. E., Chugh, T., Allmendinger, R., & Miettinen, K. (2019). A Feature Rich Distance-Based Many-Objective Visualisable Test Problem Generator. => possible benchmark for many objectives ?
+*  at https://github.com/fieldsend/DBMOPP_generator
+*/
 case class NSGA3 (
                    /**
                      * size of the population, generally taken close to number of ref points

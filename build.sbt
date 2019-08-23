@@ -29,6 +29,9 @@ libraryDependencies += "net.cilib" %% "benchmarks" % "0.1.1"
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1"
 
+// ascii plot
+libraryDependencies += "org.sameersingh.scalaplot" % "scalaplot" % "0.0.4"
+
 
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "2.10.4"
 //libraryDependencies += "com.chuusai" % "shapeless_2.10" % "1.2.4"
