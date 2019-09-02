@@ -15,7 +15,8 @@ case class StandardSuite(name: String) extends Suite {
 
 object StandardSuite {
 
-  val functions = Seq(Rosenbrock.rosenbrock)
+  val functions: Seq[AnyRef] = Seq(Rosenbrock.rosenbrock,Rastrigin.rastrigin,Ellipsoidal.ellipsoidal,Ackley.ackley,Griewank.griewank,Langermann.langermann)
+
 }
 
 
