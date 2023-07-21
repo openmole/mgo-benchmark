@@ -1,6 +1,6 @@
 package mgobench.utils
 
-import mgo._
+import mgo.evolution.C
 
 import scala.math._
 

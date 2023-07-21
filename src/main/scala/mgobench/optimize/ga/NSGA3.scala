@@ -6,11 +6,11 @@ import mgobench.optimize.ga.NSGA3Operations._
 import mgobench.problem.Problem
 import mgobench.result.Result
 import mgobench.utils.aggregation
-import mgo._
-import mgo.algorithm._
-import mgo.ranking._
-import mgo.breeding._
-import mgo.elitism._
+import mgo.evolution._
+import mgo.evolution.algorithm._
+import ranking._
+import breeding._
+import elitism._
 import mgo.contexts._
 import cats.data._
 import cats.implicits._

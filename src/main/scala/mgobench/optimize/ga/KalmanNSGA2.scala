@@ -3,25 +3,26 @@ package mgobench.optimize.ga
 
 
 import mgo._
-import algorithm._
+import evolution._
 import ranking._
 import tools._
 import breeding._
 import elitism._
-import contexts._
+//import contexts._
 import cats.data._
 import cats.implicits._
-import freedsl.dsl._
-import freedsl.tool._
-import mgo.algorithm.CDGenome._
+//import freedsl.dsl._
+//import freedsl.tool._
+import mgo.evolution.algorithm.CDGenome._
 import mgobench.optimize.Optimization
 import mgobench.optimize.ga.KalmanNSGA2Operations.KalmanIndividual
 import mgobench.optimize.ga.NSGA2.{NSGA2Instance, result, run}
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
-import monocle.macros.Lenses
-import shapeless._
+//import monocle.macros.Lenses
+import monocle.macros.GenLens
+//import shapeless._
 
 import scala.language.higherKinds
 

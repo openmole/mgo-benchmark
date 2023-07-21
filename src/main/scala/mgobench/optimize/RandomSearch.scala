@@ -2,7 +2,8 @@ package mgobench.optimize
 
 
 import mgo._
-import mgobench.utils.benchmark
+import mgo.evolution.C
+import mgobench.utils.Benchmark
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
@@ -16,10 +17,10 @@ import scala.util.Random
 
 
 case class RandomSearch (
-                          val nsearchs : Int,
-                          val nrepets : Int,
-                          val seed : Int,
-                          val stoppingCondition: (Double,Double) => Boolean = {case (d1,d2)=>false}
+                          nsearchs : Int,
+                          nrepets : Int,
+                          seed : Int,
+                          stoppingCondition: (Double,Double) => Boolean = {case (d1,d2)=>false}
                         ) extends Optimization {
   /**
     * A new random object is created at each optimization but with the fixed seed for reproducibility
@@ -73,7 +74,7 @@ object RandomSearch {
   def optimize(fitness : Vector[Double] => Vector[Double])(genome : Vector[C])(nsearchs: Int)(nrepets: Int)(rng : Random) : Vector[(Vector[Double],Vector[Double])] = {
     val points = Vector.fill(nsearchs)(genome.map {c => (c.high - c.low)*rng.nextDouble() +  c.low})
     val fitnessValues = points.map{x => (1 to nrepets by 1).map{_ => fitness(x)}.reduce{ebesum}.map{_/nrepets}}
-    val front = benchmark.paretoFront(points,fitnessValues)
+    val front = Benchmark.paretoFront(points,fitnessValues)
     front.map{i => (i.genome.continuousValues.to[Vector],i.fitness.to[Vector])}
   }
 

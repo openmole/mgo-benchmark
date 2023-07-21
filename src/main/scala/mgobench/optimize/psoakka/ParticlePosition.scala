@@ -1,5 +1,7 @@
 package mgobench.optimize.psoakka
 
+/*
+
 import breeze.linalg.sum
 import breeze.numerics.abs
 import com.hungrylearner.pso.particle.breezedvd.MutablePositionDVD
@@ -40,3 +42,5 @@ class ParticlePosition(
     */
   override def copy: ParticlePosition = new ParticlePosition( value, bounds,fitness)
 }
+
+ */

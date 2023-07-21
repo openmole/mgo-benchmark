@@ -1,6 +1,6 @@
 package mgobench.test
 
-import mgo.C
+import mgo.evolution.C
 import mgobench.{Benchmark, optimize}
 import mgobench.optimize.GradientDescent
 import mgobench.optimize.ga.NSGA3Operations._
@@ -93,7 +93,7 @@ package object test {
       dim <- 2 to 10 by 1
       p <- 1 to 5 by 1
       expectedNumber = CombinatoricsUtils.binomialCoefficient(dim + p - 1,p)
-      points = NSGA3Operations.simplexRefPoints(p,dim)
+      points: Vector[Vector[Double]] = NSGA3Operations.simplexRefPoints(p,dim)
     } yield {
       (dim,p)->(expectedNumber,points.size,points)
       //(dim,p)->(expectedNumber,points.size)
@@ -101,8 +101,8 @@ package object test {
     val resMap = res.toMap
 
     //println(res)
-    println("Cum error = "+res.map{r => math.abs(r._2._1 - r._2._2)}.sum)
-    println("Num of errors = "+res.filter(r => r._2._1 != r._2._2).size)
+    println("Cum error = "+res.map{r => math.abs(r._2._1.toInt - r._2._2)}.sum)
+    println("Num of errors = "+res.filter(r => r._2._1.toInt != r._2._2).size)
 
     println(res.filter(r => r._2._1 != r._2._2).map(r=> (r._1,r._2._1,r._2._2)))
 

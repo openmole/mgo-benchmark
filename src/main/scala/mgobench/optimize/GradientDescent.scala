@@ -100,7 +100,7 @@ object GradientDescent {
     val prevevals = problem.evaluations
 
     // gradient descent is a monoobjective optimization : we aggregate by summing here
-    val fitness: DenseVector[Double] => Double = {x => problem.fitness(x.toScalaVector()) sum}
+    val fitness: DenseVector[Double] => Double = {x => problem.fitness(x.toScalaVector).sum}
     val boundaries = problem.boundaries
 
     // define gradient function
@@ -124,8 +124,8 @@ object GradientDescent {
     //println(minstate.adjustedGradient.map{_.abs}.sum)
 
     Result(
-      points = Vector(minstate.x.toScalaVector()),
-      values = Vector(problem.fitness(minstate.x.toScalaVector())),
+      points = Vector(minstate.x.toScalaVector),
+      values = Vector(problem.fitness(minstate.x.toScalaVector)),
       runs = problem.evaluations - prevevals,
       problem = problem.asInstanceOf[CocoProblem],
       optimizer = gradientDescent

@@ -2,7 +2,7 @@
 import mgobench.optimize._
 import mgobench.optimize.ga.{NoisyNSGA2, _}
 import mgobench.optimize.pso.{GCPSO, GlobalBestPSO}
-import mgobench.optimize.psoakka.BasicPSOAkka
+//import mgobench.optimize.psoakka.BasicPSOAkka
 import mgobench.problem.coco.NoisyCocoSuite
 import mgobench.problem.noise.GaussianNoise1D
 //import mgobench.optimize.ga.NSGA2

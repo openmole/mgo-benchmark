@@ -1,5 +1,7 @@
 package mgobench.optimize.psoakka
 
+
+/*
 import akka.actor._
 import akka.event.{Logging, LoggingAdapter}
 import breeze.linalg.{DenseVector, sum}
@@ -202,4 +204,4 @@ object BasicPSOAkka {
 
 }
 
-
+*/

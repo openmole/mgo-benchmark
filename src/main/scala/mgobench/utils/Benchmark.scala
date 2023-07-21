@@ -1,11 +1,11 @@
 package mgobench.utils
 
-import mgo.algorithm.CDGenome.DeterministicIndividual.{Individual, vectorFitness}
-import mgo.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
-import mgo.algorithm.keepFirstFront
+import mgo.evolution.algorithm.CDGenome.DeterministicIndividual.{Individual, vectorFitness}
+import mgo.evolution.algorithm.CDGenome.{DeterministicIndividual, buildGenome}
+import mgo.evolution.elitism.keepFirstFront
 
 
-object benchmark {
+object Benchmark {
 
 
   /**

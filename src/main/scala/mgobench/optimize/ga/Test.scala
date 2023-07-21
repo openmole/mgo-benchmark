@@ -1,7 +1,7 @@
 package mgobench.optimize.ga
 
 import mgo._
-import mgo.contexts._
+//import mgo.contexts._
 import freedsl.dsl._
 import NSGA2.{NSGA2Instance, Result}
 import mgo.algorithm.CDGenome.DeterministicIndividual._

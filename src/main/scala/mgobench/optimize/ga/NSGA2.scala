@@ -5,8 +5,9 @@ import mgobench.problem.Problem
 import mgobench.result.Result
 import mgobench.utils._
 
-import mgo.algorithm.GenomeVectorDouble._
+import mgo.evolution.algorithm.GenomeVectorDouble._
 import mgo._
+import mgo.evolution._
 import algorithm._
 import ranking._
 import tools._
@@ -133,7 +134,7 @@ object NSGA2 {
   def initialGenomes[M[_]: cats.Monad: Random](lambda: Int, continuous: Vector[C]) =
     CDGenome.initialGenomes[M](lambda, continuous, Vector.empty)
 
-  def breeding[M[_]: Generation: Random: cats.Monad](lambda: Int): Breeding[M, Individual, Genome] =
+  def breeding[M[_]: Generation: Random: cats.Monad](lambda: Int): Breeding[M, Individual[Vector[Double]], Genome] =
     NSGA2Operations.breeding[M, Individual, Genome](
       vectorFitness.get,
       Individual.genome.get,
@@ -143,11 +144,11 @@ object NSGA2 {
       Operators.mutation,
       lambda)
 
-  def expression(fitness: Vector[Double] => Vector[Double], components: Vector[C]): Genome => Individual =
+  def expression(fitness: Vector[Double] => Vector[Double], components: Vector[C]): Genome => Individual[Vector[Double]] =
     DeterministicIndividual.expression((v, d) => fitness(v), components)
 
-  def elitism[M[_]: cats.Monad: Random: Generation](mu: Int, components: Vector[C]): Elitism[M, Individual] =
-    NSGA2Operations.elitism[M, Individual](
+  def elitism[M[_]: cats.Monad: Random: Generation](mu: Int, components: Vector[C]): Elitism[M, Individual[Vector[Double]]] =
+    NSGA2Operations.elitism[M, Individual[Vector[Double]]](
       vectorFitness.get,
       i => values(Individual.genome.get(i), components),
       mu)
@@ -156,12 +157,12 @@ object NSGA2 {
 
 
 
-  def result(population: Vector[Individual], continuous: Vector[C]): Vector[Result] =
+  def result(population: Vector[Individual[Vector[Double]]], continuous: Vector[C]): Vector[Result] =
     keepFirstFront(population, vectorFitness.get).map { i =>
       Result(scaleContinuousValues(continuousValues.get(i.genome), continuous), Individual.genome composeLens discreteValues get i, i.fitness.toVector)
     }
 
-  def result(nsga2: NSGA2Instance, population: Vector[Individual]): Vector[Result] = result(population, nsga2.continuous)
+  def result(nsga2: NSGA2Instance, population: Vector[Individual[Vector[Double]]]): Vector[Result] = result(population, nsga2.continuous)
 
   def state[M[_]: cats.Monad: StartTime: Random: Generation] = mgo.algorithm.state[M, Unit](())
 
@@ -171,11 +172,11 @@ object NSGA2 {
   implicit def isAlgorithm[M[_]: Generation: Random: cats.Monad: StartTime]: Algorithm[NSGA2Instance, M, Individual, Genome, EvolutionState[Unit]] =
     new Algorithm[NSGA2Instance, M, Individual, Genome, EvolutionState[Unit]] {
       override def initialPopulation(t: NSGA2Instance) =
-        deterministic.initialPopulation[M, Genome, Individual](
+        deterministic.initialPopulation[M, Genome, Individual[Vector[Double]]](
           NSGA2.initialGenomes[M](t.lambda, t.continuous),
           NSGA2.expression(t.fitness, t.continuous))
       override def step(t: NSGA2Instance) =
-        deterministic.step[M, Individual, Genome](
+        deterministic.step[M, Individual[Vector[Double]], Genome](
           NSGA2.breeding[M](t.lambda),
           NSGA2.expression(t.fitness, t.continuous),
           NSGA2.elitism(t.mu, t.continuous))

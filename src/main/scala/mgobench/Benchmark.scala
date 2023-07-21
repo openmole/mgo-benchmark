@@ -17,7 +17,7 @@ object Benchmark {
     * @return
     */
   def benchmark(optimizers: Seq[Optimization], problems: Seq[Problem]): Seq[Seq[Result]] = {
-    optimizers.map{case o => problems.map{o.optimize(_)}}
+    optimizers.map{o => problems.map{o.optimize}}
   }
 
   /**

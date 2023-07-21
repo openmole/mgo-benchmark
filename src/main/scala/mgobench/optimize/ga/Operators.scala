@@ -1,6 +1,6 @@
 package mgobench.optimize.ga
 
-import mgo.breeding.{bga, sbxC}
+import mgo.evolution.breeding.{bga, sbxC}
 import mgo.contexts.Random
 
 object Operators {

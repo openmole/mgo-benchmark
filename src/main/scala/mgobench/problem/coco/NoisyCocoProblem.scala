@@ -20,7 +20,7 @@ case class NoisyCocoProblem(
   override def isEmpty: Boolean = cocoProblem.isEmpty
 
   override def fitness: Vector[Double] => Vector[Double] = {
-    x: Vector[Double] => cocoProblem.fitness(x).zip(noise.noise(x)).map{case (f,b)=> f+b}}
+    (x: Vector[Double]) => cocoProblem.fitness(x).zip(noise.noise(x)).map{case (f,b)=> f+b}}
 
 }
 

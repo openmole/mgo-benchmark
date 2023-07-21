@@ -1,12 +1,13 @@
 organization := "fr.iscpif"
 name := "mgo-bench"
 
-scalaVersion := "2.12.4"
-crossScalaVersions := Seq("2.10.4")
+//scalaVersion := "2.12.4"
+scalaVersion := "3.3.0"
+//crossScalaVersions := Seq("2.10.4")
 
-addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
-addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full)
-scalacOptions += "-Xplugin-require:macroparadise"
+//addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.4")
+//addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full)
+//scalacOptions += "-Xplugin-require:macroparadise"
 
 resolvers += Resolver.sonatypeRepo("public")
 resolvers += Resolver.sonatypeRepo("staging")
@@ -18,14 +19,15 @@ resolvers += Resolver.mavenCentral
 //resolvers += "Jzy3d Maven Release Repository" at "http://maven.jzy3d.org/releases"
 //resolvers += "BeDataDriven" at "https://nexus.bedatadriven.com/content/groups/public"
 
-libraryDependencies += "fr.iscpif" %% "mgo" % "3.8-SNAPSHOT"
-libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2"
-libraryDependencies += "org" %% "akka-multiswarm" % "0.1-SNAPSHOT" // locally published lib
-libraryDependencies += "net.cilib" %% "cilib-core" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" %% "cilib-exec" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" %% "cilib-ga" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" %% "cilib-pso" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" %% "benchmarks" % "0.1.1"
+//libraryDependencies += ("fr.iscpif" % "mgo_2.12" % "3.32").exclude("org.typelevel","cats-kernel_2.12")
+libraryDependencies += "org.openmole" % "mgo_3" % "3.55"
+libraryDependencies += "org.scalanlp" % "breeze_3" % "2.1.0"
+//libraryDependencies += ("org" % "akka-multiswarm_2.12" % "0.1-SNAPSHOT").exclude("org.scalanlp", "breeze_2.12") // locally published lib
+libraryDependencies += "net.cilib" % "cilib-core_2.12" % "2.0.1-30-g5ca4090"
+libraryDependencies += "net.cilib" % "cilib-exec_2.12" % "2.0.1-30-g5ca4090"
+libraryDependencies += "net.cilib" % "cilib-ga_2.12" % "2.0.1-30-g5ca4090"
+libraryDependencies += "net.cilib" % "cilib-pso_2.12" % "2.0.1-30-g5ca4090"
+libraryDependencies += "net.cilib" % "benchmarks_2.12" % "0.1.1"
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1"
 

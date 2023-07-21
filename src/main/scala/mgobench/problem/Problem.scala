@@ -1,6 +1,6 @@
 package mgobench.problem
 
-import mgo.C
+import mgo.evolution.C
 
 trait Problem {
 

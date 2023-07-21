@@ -32,7 +32,7 @@ package object utils {
         * filter by indices
         * @param indices
         */
-      def filter[_](indices: Vector[Int]): Vector[A] = v.zipWithIndex.filter{case (_,i)=>indices.contains(i)}.map{_._1}
+      def filter(indices: Vector[Int]): Vector[A] = v.zipWithIndex.filter{case (_,i)=>indices.contains(i)}.map{_._1}
     }
 
     def filter[A](v: Vector[A],indices: Vector[Int]): Vector[A] = v.zipWithIndex.filter{case (_,i)=>indices.contains(i)}.map{_._1}

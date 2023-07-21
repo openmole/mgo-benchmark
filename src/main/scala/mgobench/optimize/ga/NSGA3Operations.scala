@@ -1,6 +1,6 @@
 package mgobench.optimize.ga
 
-import mgo.algorithm.GenomeVectorDouble._
+import mgo.evolution.algorithm.GenomeVectorDouble._
 import mgo._
 import algorithm._
 import ranking._

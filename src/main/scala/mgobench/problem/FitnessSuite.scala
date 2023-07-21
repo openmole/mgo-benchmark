@@ -1,7 +1,7 @@
 
 package mgobench.problem
 
-import mgo.C
+import mgo.evolution.C
 
 case class FitnessSuite(fitnesses:Seq[(Vector[Double]=> Vector[Double],Vector[C])]) extends Suite {
 

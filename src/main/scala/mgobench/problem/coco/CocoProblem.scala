@@ -53,12 +53,12 @@ object CocoProblem {
     * @throws Exception
     */
   def apply(coco: CocoJNI,pointer: Long,extnoise: Noise = null) : CocoProblem = {
-    if(pointer == 0) return emptyProblem
+    if(pointer == 0) emptyProblem
     else {
       val dim = coco.cocoProblemGetDimension(pointer)
       val objs = coco.cocoProblemGetNumberOfObjectives(pointer)
-      val low = coco.cocoProblemGetSmallestValuesOfInterest(pointer).to[Vector]
-      val high = coco.cocoProblemGetLargestValuesOfInterest(pointer).to[Vector]
+      val low = coco.cocoProblemGetSmallestValuesOfInterest(pointer).toVector
+      val high = coco.cocoProblemGetLargestValuesOfInterest(pointer).toVector
       val id = coco.cocoProblemGetId(pointer)
       val fun = id.split("_")(1).replace("0", "")
       val inst = id.split("_")(2).replace("i", "").toInt
@@ -102,12 +102,12 @@ object CocoProblem {
      */
       //println(System.currentTimeMillis())
 
-    val res = coco.cocoEvaluateFunction(problem.pointer, x.toArray).to[Vector]
+    val res = coco.cocoEvaluateFunction(problem.pointer, x.toArray).toVector
 
       /*println("Unlocking " + evaluationLock.toString)
       evaluationLock.unlock()
       */
-      return (res)
+      res
       //  }
       //  Vector.empty
     //}

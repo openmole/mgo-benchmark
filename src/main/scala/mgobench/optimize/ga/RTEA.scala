@@ -2,7 +2,7 @@ package mgobench.optimize.ga
 
 
 import cats.data.Kleisli
-import mgo.algorithm.CDGenome._
+import mgo.evolution.algorithm.CDGenome._
 import mgo.algorithm._
 import mgo.{C, arrayToVectorLens, contexts}
 import mgo.contexts._

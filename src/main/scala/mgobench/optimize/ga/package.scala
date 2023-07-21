@@ -1,9 +1,9 @@
 package mgobench.optimize
 
+import cats._
 import cats.data._
 import cats.implicits._
-import mgo.ranking._
-import shapeless.Lazy
+import mgo.evolution.ranking._
 
 package object ga {
 
@@ -16,7 +16,7 @@ package object ga {
     * @tparam I
     * @return
     */
-  def lexicoRanking[M[_]: cats.Monad, I](ranking1: Ranking[M, I],ranking2: Ranking[M, I]): Kleisli[M, Vector[I], Vector[(Lazy[Int], Lazy[Int])]] =
+  def lexicoRanking[M[_]: cats.Monad, I](ranking1: Ranking[M, I],ranking2: Ranking[M, I]): Kleisli[M, Vector[I], Vector[(Later[Int], Later[Int])]] =
     Kleisli((population: Vector[I]) =>
       for {
         r1 <- ranking1(population)
@@ -25,7 +25,7 @@ package object ga {
 
   def acceptableRanking[M[_]: cats.Monad, I](fitness: I => Vector[Double],acceptableFitness: Vector[Double]): Kleisli[M,Vector[I],Vector[Lazy[Int]]] = {
     def acceptableComps = (i: I) => fitness(i).zip(acceptableFitness).map{case(f,fa)=>if(f<fa)0.0 else 1.0}
-    paretoRanking[M,I](acceptableComps)
+    paretoRanking[I](acceptableComps)
   }
 
 

@@ -1,13 +1,13 @@
 package mgobench.optimize.ga
 
-import mgo.algorithm.GenomeVectorDouble._
-import mgo._
+import mgo.evolution.algorithm.GenomeVectorDouble._
+import mgo.evolution._
 import algorithm._
 import ranking._
 import tools._
 import breeding._
 import elitism._
-import contexts._
+//import contexts._
 import cats.data._
 import cats.implicits._
 import freedsl.dsl._
@@ -128,7 +128,7 @@ object NoisyNSGA2 {
 
     case class Result(continuous: Vector[Double], discrete: Vector[Int], fitness: Vector[Double], replications: Int)
 
-    def result(population: Vector[Individual],
+    def result(population: Vector[Individual[Vector[Double]]],
                aggregation: Vector[Vector[Double]] => Vector[Double],
                //embedding: Vector[Vector[Double]]=>Vector[Double],
                continuous: Vector[C]) =
@@ -138,7 +138,7 @@ object NoisyNSGA2 {
           Result(c, d, f, r)
       }
 
-    def result(nsga2: NoisyNSGA2Instance, population: Vector[Individual]): Vector[Result] =
+    def result(nsga2: NoisyNSGA2Instance, population: Vector[Individual[Vector[Double]]]): Vector[Result] =
       result(population,
         //nsga2.aggregation, // FIXME add CI computation as an option
         nsga2.aggregationWithCI,
@@ -151,7 +151,7 @@ object NoisyNSGA2 {
     def breeding[M[_] : cats.Monad : Random : Generation](
                                                            lambda: Int,
                                                            cloneProbability: Double,
-                                                           aggregation: Vector[Vector[Double]] => Vector[Double]): Breeding[M, Individual, Genome] =
+                                                           aggregation: Vector[Vector[Double]] => Vector[Double]): Breeding[M, Individual[Vector[Double]], Genome] =
       NoisyNSGA2Operations.breeding[M, Individual, Genome](
         vectorFitness.get,
         aggregation,
@@ -163,7 +163,7 @@ object NoisyNSGA2 {
         lambda,
         cloneProbability)
 
-    def expression(fitness: (util.Random, Vector[Double]) => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual =
+    def expression(fitness: (util.Random, Vector[Double]) => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual[Vector[Double]] =
       NoisyIndividual.expression((rng, v, d) => fitness(rng, v), continuous)
 
     def elitism[M[_] : cats.Monad : Random : Generation](mu: Int,
@@ -171,8 +171,8 @@ object NoisyNSGA2 {
                                                          aggregation: Vector[Vector[Double]] => Vector[Double],
                                                          embedding: Vector[Vector[Double]] => Vector[Double],
                                                          components: Vector[C]
-                                                        ): Elitism[M, Individual] =
-      NoisyNSGA2Operations.elitism[M, Individual](
+                                                        ): Elitism[M, Individual[Vector[Double]]] =
+      NoisyNSGA2Operations.elitism[M, Individual[Vector[Double]]](
         vectorFitness,
         aggregation,
         embedding,
@@ -191,12 +191,12 @@ object NoisyNSGA2 {
     implicit def isAlgorithm[M[_] : Generation : Random : cats.Monad : StartTime]: Algorithm[NoisyNSGA2Instance, M, Individual, Genome, EvolutionState[Unit]] =
       new Algorithm[NoisyNSGA2Instance, M, Individual, Genome, EvolutionState[Unit]] {
       def initialPopulation(t: NoisyNSGA2Instance) =
-        noisy.initialPopulation[M, Genome, Individual](
+        noisy.initialPopulation[M, Genome, Individual[Vector[Double]]](
           NoisyNSGA2.initialGenomes[M](t.lambda, t.continuous),
           NoisyNSGA2.expression(t.fitness, t.continuous))
 
-      def step(t: NoisyNSGA2Instance): Kleisli[M, Vector[Individual], Vector[Individual]] =
-        noisy.step[M, Individual, Genome](
+      def step(t: NoisyNSGA2Instance): Kleisli[M, Vector[Individual[Vector[Double]]], Vector[Individual[Vector[Double]]]] =
+        noisy.step[M, Individual[Vector[Double]], Genome](
           NoisyNSGA2.breeding[M](
             t.lambda,
             t.cloneProbability,
