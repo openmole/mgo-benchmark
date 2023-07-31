@@ -1,6 +1,6 @@
 package mgobench.result
 
-import mgobench.optimize.Optimization
+import mgobench.optimise.Optimisation
 import mgobench.problem.Problem
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, HistoricalSolution}
 import sun.security.util.PropertyExpander.ExpandException

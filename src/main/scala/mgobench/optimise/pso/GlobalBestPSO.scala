@@ -1,6 +1,6 @@
-package mgobench.optimize.pso
+package mgobench.optimise.pso
 
-import mgobench.optimize.Optimization
+import mgobench.optimise.Optimisation
 import mgobench.problem.Problem
 import mgobench.result.Result
 import eu.timepit.refined.auto.autoRefineV
@@ -58,7 +58,7 @@ case class GlobalBestPSO(
                             * Weight of social
                             */
                           c2: Double = 1.496180
-                   ) extends Optimization {
+                   ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = GlobalBestPSO.optimize(globalBestPSO = this,problem)
 

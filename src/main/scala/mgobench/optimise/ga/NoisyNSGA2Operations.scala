@@ -1,19 +1,17 @@
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
-import mgo.algorithm.GenomeVectorDouble._
+
 import mgo._
-import algorithm._
-import ranking._
+import mgo.evolution.algorithm._
+import mgo.evolution.algorithm.GenomeVectorDouble._
+import mgo.evolution.ranking._
 import tools._
-import breeding._
-import elitism._
-import contexts._
+import mgo.evolution.breeding._
+import mgo.evolution.elitism._
 
 import cats.data._
 import cats.implicits._
 
-import freedsl.tool._
-import shapeless._
 
 
 

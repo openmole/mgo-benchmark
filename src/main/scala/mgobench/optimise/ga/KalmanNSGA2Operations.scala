@@ -1,20 +1,19 @@
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
 import mgo._
-import mgo.algorithm._
-import mgo.algorithm.CDGenome._
-import mgo.algorithm.deterministic
-import mgo.contexts._
-import mgo.elitism._
-import mgo.ranking.{reversedRanking, _}
+import mgo.evolution.algorithm._
+import mgo.evolution.algorithm.CDGenome._
+import mgo.evolution.algorithm.deterministic
+import mgo.evolution.elitism._
+import mgo.evolution.ranking._
 import mgo.tools._
 import cats.implicits._
-import freedsl.tool._
-import mgo.algorithm.GenomeVectorDouble._
-import mgo.breeding._
+
+import mgo.evolution.algorithm.GenomeVectorDouble._
+import mgo.evolution.breeding._
 import mgo.dominance.nonStrictDominance
 import monocle.macros._
-import shapeless._
+
 import mgobench.utils.implicits._
 
 object KalmanNSGA2Operations {

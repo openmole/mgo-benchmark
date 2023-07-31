@@ -1,5 +1,5 @@
 
-package mgobench.optimize
+package mgobench.optimise
 
 import mgobench.problem.Problem
 import mgobench.result.Result
@@ -14,7 +14,7 @@ case class NoisyGradientDescent(
                                budget: Int,
                                tolerance: Double = -1,
                                rng: Random = new Random
-                               ) extends Optimization {
+                               ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = NoisyGradientDescent.optimize(this,problem)
 

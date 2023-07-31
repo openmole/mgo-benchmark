@@ -1,4 +1,4 @@
-package mgobench.optimize
+package mgobench.optimise
 
 
 import mgo._
@@ -21,7 +21,7 @@ case class RandomSearch (
                           nrepets : Int,
                           seed : Int,
                           stoppingCondition: (Double,Double) => Boolean = {case (d1,d2)=>false}
-                        ) extends Optimization {
+                        ) extends Optimisation {
   /**
     * A new random object is created at each optimization but with the fixed seed for reproducibility
     *

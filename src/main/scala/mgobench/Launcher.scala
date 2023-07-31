@@ -2,10 +2,9 @@
 package mgobench
 
 
-
-import mgobench.optimize.{NoisyGradientDescent, _}
-import mgobench.optimize.ga._
-import mgobench.optimize.pso._
+import mgobench.optimise.*
+import mgobench.optimise.ga._
+import mgobench.optimise.pso._
 import mgobench.problem.coco.{CocoProblem, NoisyCocoSuite}
 import mgobench.problem.noise.{GaussianNoise1D, Noise}
 import mgobench.result.{Indicators, Result}
@@ -70,7 +69,7 @@ object Launcher extends App {
   val noisynsga2 = NoisyNSGA2(lambda = lambda,mu = mu,generations = (budget / lambda),historySize = noisyNsga2historySize,cloneProbability = noisyNsga2cloneProba,embedding="inv-size")
   val pso = GlobalBestPSO(iterations = budget / particles,particles = particles)
 
-  val optimizers: Seq[Optimization] = optimName match {
+  val optimizers: Seq[Optimisation] = optimName match {
     case "RS" => Seq(rs)
     case "GD" => Seq(gd)
     case "NGD" => Seq(ngd)

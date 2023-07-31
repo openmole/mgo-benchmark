@@ -1,6 +1,6 @@
 package mgobench
 
-import mgobench.optimize.Optimization
+import mgobench.optimise.Optimisation
 import mgobench.problem.coco.CocoProblem
 import mgobench.problem.{Problem, Suite}
 import mgobench.result.Result
@@ -16,7 +16,7 @@ object Benchmark {
     * @param problems
     * @return
     */
-  def benchmark(optimizers: Seq[Optimization], problems: Seq[Problem]): Seq[Seq[Result]] = {
+  def benchmark(optimizers: Seq[Optimisation], problems: Seq[Problem]): Seq[Seq[Result]] = {
     optimizers.map{o => problems.map{o.optimize}}
   }
 
@@ -27,7 +27,7 @@ object Benchmark {
     * @param suite
     * @return Everything flatten (problem and optimizer stored in Result)
     */
-  def benchmark(optimizers: Seq[Optimization], nBootstraps: Int, suite: Suite,problemsNumber: Int = 1,problemFilter: Problem=>Boolean = {_=>true}): Seq[Result] = {
+  def benchmark(optimizers: Seq[Optimisation], nBootstraps: Int, suite: Suite, problemsNumber: Int = 1, problemFilter: Problem=>Boolean = { _=>true}): Seq[Result] = {
     println("Launching benchmark on Optimizers "+optimizers.mkString(";"))
     var currentProblem = suite.getNextProblem
     val res = new ArrayBuffer[Result]

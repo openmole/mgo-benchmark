@@ -1,4 +1,4 @@
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
 
 import cats.data.Kleisli
@@ -6,7 +6,7 @@ import mgo.evolution.algorithm.CDGenome._
 import mgo.algorithm._
 import mgo.{C, arrayToVectorLens, contexts}
 import mgo.contexts._
-import mgobench.optimize._
+import mgobench.optimise._
 import mgobench.problem._
 import mgobench.result._
 import monocle.macros.Lenses
@@ -33,7 +33,7 @@ case class RTEA(
   maxPopSize: Int,
   generations: Int,
   rng: scala.util.Random = new scala.util.Random
-) extends Optimization {
+) extends Optimisation {
 
   override def optimize(problem: Problem): Result = RTEA.optimize(this,problem)
 

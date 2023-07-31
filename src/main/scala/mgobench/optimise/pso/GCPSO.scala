@@ -1,12 +1,12 @@
 
-package mgobench.optimize.pso
+package mgobench.optimise.pso
 
 import cilib.exec.Runner
 import cilib.pso.Defaults
 import cilib.pso.{Guide, PSO, Particle}
 import cilib.{Comparison, Entity, Environment, Eval, Feasible, Iteration, Mem, Min, Position, RNG, Step, StepS}
 import eu.timepit.refined.api.Refined
-import mgobench.optimize.Optimization
+import mgobench.optimise.Optimisation
 import mgobench.problem.Problem
 import mgobench.result.Result
 import scalaz.effect.IO
@@ -39,7 +39,7 @@ case class GCPSO(
 
                   rng: Random = new Random
 
-                ) extends Optimization {
+                ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = GCPSO.optimize(gcpso = this,problem)
 

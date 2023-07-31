@@ -1,4 +1,4 @@
-package mgobench.optimize
+package mgobench.optimise
 
 import cats._
 import cats.data._

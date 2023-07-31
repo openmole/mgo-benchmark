@@ -1,5 +1,5 @@
 
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
 
 import mgo._
@@ -11,18 +11,16 @@ import elitism._
 //import contexts._
 import cats.data._
 import cats.implicits._
-//import freedsl.dsl._
-//import freedsl.tool._
+
 import mgo.evolution.algorithm.CDGenome._
-import mgobench.optimize.Optimization
-import mgobench.optimize.ga.KalmanNSGA2Operations.KalmanIndividual
-import mgobench.optimize.ga.NSGA2.{NSGA2Instance, result, run}
+import mgobench.optimise.Optimisation
+import mgobench.optimise.ga.KalmanNSGA2Operations.KalmanIndividual
+import mgobench.optimise.ga.NSGA2.{NSGA2Instance, result, run}
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
 //import monocle.macros.Lenses
 import monocle.macros.GenLens
-//import shapeless._
 
 import scala.language.higherKinds
 
@@ -34,7 +32,7 @@ case class KalmanNSGA2(
                       cloneProbability: Double = 0.2,
                       observationNoise: Double = 1.0,
                       rng: scala.util.Random = new scala.util.Random
-                      ) extends Optimization {
+                      ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = KalmanNSGA2.optimize(this,problem)
 
@@ -124,7 +122,7 @@ object KalmanNSGA2 {
 
   import KalmanNSGA2Operations.KalmanIndividual._
 
-  def initialGenomes[M[_]: cats.Monad: Random](lambda: Int, continuous: Vector[C]) =
+  def initialGenomes(lambda: Int, continuous: Vector[C], discrete: Vector[D], reject: Option[Genome => Boolean], rng: scala.util.Random) =
     CDGenome.initialGenomes[M](lambda, continuous, Vector.empty)
 
   def breeding[M[_]: Generation: Random: cats.Monad](lambda: Int,cloneProbability: Double): Breeding[M, Individual, Genome] =

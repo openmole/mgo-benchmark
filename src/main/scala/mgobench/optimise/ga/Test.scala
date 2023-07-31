@@ -1,13 +1,12 @@
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
 import mgo._
 //import mgo.contexts._
-import freedsl.dsl._
 import NSGA2.{NSGA2Instance, Result}
-import mgo.algorithm.CDGenome.DeterministicIndividual._
-import mgo.algorithm.CDGenome.Genome
-import mgo.algorithm.CDGenome.NoisyIndividual.Individual
-import mgo.algorithm.{Algorithm, EvolutionState, deterministic}
+import mgo.evolution.algorithm.CDGenome.DeterministicIndividual._
+import mgo.evolution.algorithm.CDGenome.Genome
+import mgo.evolution.algorithm.CDGenome.NoisyIndividual.Individual
+import mgo.evolution.algorithm._
 import mgobench.result._
 
 import scala.util.Random

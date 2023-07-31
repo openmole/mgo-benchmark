@@ -1,4 +1,4 @@
-package mgobench.optimize.psoakka
+package mgobench.optimise.psoakka
 
 
 /*

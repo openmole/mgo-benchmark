@@ -1,4 +1,4 @@
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
 import mgo.evolution.algorithm.GenomeVectorDouble._
 import mgo._

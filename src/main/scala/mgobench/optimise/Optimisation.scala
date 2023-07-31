@@ -1,4 +1,4 @@
-package mgobench.optimize
+package mgobench.optimise
 
 import mgobench.problem.Problem
 import mgobench.result.Result
@@ -9,7 +9,7 @@ import mgobench.result.Result
 //type Optimization = (Fitness,Vector[C]) => mgobench.result.Result
 
 
-trait Optimization {
+trait Optimisation {
 
   /**
     * Returns q seq of results corresponding to successive iterations
@@ -17,7 +17,7 @@ trait Optimization {
     * @param problem
     * @return
     */
-  def optimize(problem: Problem) : Result
+  def optimise(problem: Problem) : Result
 
   def name: String
 

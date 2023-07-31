@@ -1,6 +1,6 @@
 package mgobench.result
 
-import mgobench.optimize.{Optimization, RandomSearch}
+import mgobench.optimise.{Optimisation, RandomSearch}
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 
@@ -14,7 +14,7 @@ case class Result(
                    /**
                      * points
                      */
-                  points: Vector[Vector[Double]],
+                   points: Vector[Vector[Double]],
 
                    /**
                      * Fitness values
@@ -24,32 +24,32 @@ case class Result(
                    /**
                      * Precisions
                      */
-                  precisions : Vector[Vector[Double]],
+                   precisions : Vector[Vector[Double]],
 
                    /**
                      * Number of evaluation for each point
                      */
                    evaluations: Vector[Int],
 
-                  /**
+                   /**
                     * Total number of function evaluations
                     */
-                  runs: Int,
+                   runs: Int,
 
-                  /**
+                   /**
                     * Corresponding problem
                     */
-                  problem: Problem,
+                   problem: Problem,
 
-                  /**
+                   /**
                     * Optimizer
                     */
-                  optimizer: Optimization,
+                   optimizer: Optimisation,
 
                    /**
                      * an id giving the problem and the optimizer
                      */
-                  id: String
+                   id: String
                  ) {
 
   /**
@@ -76,7 +76,7 @@ object Result {
     * @param optimizer
     * @return
     */
-  def apply(points: Vector[Vector[Double]],values: Vector[Vector[Double]],runs: Int,problem: Problem,optimizer: Optimization): Result = {
+  def apply(points: Vector[Vector[Double]],values: Vector[Vector[Double]],runs: Int,problem: Problem,optimizer: Optimisation): Result = {
     Result(
       points,
       values,
@@ -93,7 +93,7 @@ object Result {
             values: Vector[Vector[Double]],
             precisions: Vector[Vector[Double]],
             evaluations: Vector[Int],
-            runs: Int,problem: Problem,optimizer: Optimization): Result = {
+            runs: Int,problem: Problem,optimizer: Optimisation): Result = {
     Result(
       points,
       values,

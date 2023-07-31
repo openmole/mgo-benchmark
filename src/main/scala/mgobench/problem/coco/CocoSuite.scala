@@ -1,6 +1,6 @@
 package mgobench.problem.coco
 
-import mgobench.optimize.Optimization
+import mgobench.optimise.Optimisation
 import mgobench.problem.noise.Noise
 import mgobench.problem.{Problem, Suite}
 import mgobench.utils.CocoJNI
@@ -90,7 +90,7 @@ object CocoSuite {
   /**
     * testing
     */
-  def testSuiteOptim(name: String, optimizer: Optimization) = {
+  def testSuiteOptim(name: String, optimizer: Optimisation) = {
     //val suite = mgobench.problem.coco.Suite(coco,name,"","")
     val suite = getSuite(name)
 

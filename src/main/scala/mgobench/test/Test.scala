@@ -1,11 +1,11 @@
 package mgobench.test
 
 import mgo.evolution.C
-import mgobench.{Benchmark, optimize}
-import mgobench.optimize.GradientDescent
-import mgobench.optimize.ga.NSGA3Operations._
-import mgobench.optimize.ga._
-import mgobench.optimize.pso.GCPSO
+import mgobench.{Benchmark, optimise}
+import mgobench.optimise.GradientDescent
+import mgobench.optimise.ga.NSGA3Operations._
+import mgobench.optimise.ga._
+import mgobench.optimise.pso.GCPSO
 import mgobench.problem.FitnessSuite
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite, NoisyCocoSuite}
 import mgobench.problem.noise.GaussianNoise1D
@@ -35,13 +35,13 @@ package object test {
     val sigma = 2.0
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        mgobench.optimize.RandomSearch(iterations / nrepets,nrepets,1),
-        mgobench.optimize.GradientDescent(iterations / nrepets, nrepets),
-        mgobench.optimize.NoisyGradientDescent(iterations=iterations/(100*nrepets),stochastic_iterations=nrepets,nsearchs=100,tolerance=1e-20),
-        mgobench.optimize.ga.NSGA2(lambda = 100, mu = 20,nrepets = 1,generations = (iterations/100) - 1),
-        mgobench.optimize.ga.KalmanNSGA2(lambda = 100, mu = 20, generations = (iterations/100)-1, cloneProbability = 0.5,observationNoise = 1.0),
-        mgobench.optimize.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2),
-        mgobench.optimize.pso.GlobalBestPSO(iterations = iterations / 100,particles = 100)
+        mgobench.optimise.RandomSearch(iterations / nrepets,nrepets,1),
+        mgobench.optimise.GradientDescent(iterations / nrepets, nrepets),
+        mgobench.optimise.NoisyGradientDescent(iterations=iterations/(100*nrepets),stochastic_iterations=nrepets,nsearchs=100,tolerance=1e-20),
+        mgobench.optimise.ga.NSGA2(lambda = 100, mu = 20,nrepets = 1,generations = (iterations/100) - 1),
+        mgobench.optimise.ga.KalmanNSGA2(lambda = 100, mu = 20, generations = (iterations/100)-1, cloneProbability = 0.5,observationNoise = 1.0),
+        mgobench.optimise.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2),
+        mgobench.optimise.pso.GlobalBestPSO(iterations = iterations / 100,particles = 100)
       ),
       nBootstraps = 1,
       suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
@@ -67,7 +67,7 @@ package object test {
 
     val iterations = 10000
     val res = Benchmark.benchmark(Seq(
-      mgobench.optimize.ga.NSGA3(
+      mgobench.optimise.ga.NSGA3(
         popSize = 100,
         generations = iterations,
         referencePoints = AutoReferences(90))
@@ -147,7 +147,7 @@ package object test {
     val sigma = 2.0
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        mgobench.optimize.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
+        mgobench.optimise.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
       ),
       nBootstraps = 1,
       suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
@@ -210,7 +210,7 @@ package object test {
 
   def testRandomSearch(iterations: Int): Unit = {
     //Suite.testSuiteOptim("bbob",GradientDescent(iterations))
-    val res = Benchmark.benchmark(Seq(mgobench.optimize.RandomSearch(iterations)),
+    val res = Benchmark.benchmark(Seq(mgobench.optimise.RandomSearch(iterations)),
       nBootstraps = 2,CocoSuite.getSuite("bbob"),problemsNumber = 15*24+2)
     //println(res)
     //val hist = CocoSolutions.loadSolutions("data/historicalresults.csv")
@@ -236,7 +236,7 @@ package object test {
   def testCocoIntegration(): Unit = {
     // test coco integration
     //mgobench.problem.coco.CocoSuite.testSuiteOptim("bbob",optimize.RandomSearch(2))
-    mgobench.problem.coco.CocoSuite.testSuiteOptim("bbob-biobj",optimize.RandomSearch(2))
+    mgobench.problem.coco.CocoSuite.testSuiteOptim("bbob-biobj",optimise.RandomSearch(2))
   }
 
 }

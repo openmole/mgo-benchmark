@@ -1,5 +1,7 @@
 package mgobench
 
+import scala.language.implicitConversions
+
 package object utils {
 
 
@@ -50,7 +52,9 @@ package object utils {
 
     }
 
-
+    implicit def continuousFitness(f: Vector[Double] => Vector[Double]): (Vector[Double], Vector[Int]) => Vector[Double] = {
+      case (c,d) => f(c)
+    }
 
   }
 

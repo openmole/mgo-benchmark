@@ -1,20 +1,20 @@
 
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
-import mgobench.optimize.Optimization
-import mgobench.optimize.ga.NSGA3Operations._
+import mgobench.optimise.Optimisation
+import mgobench.optimise.ga.NSGA3Operations._
 import mgobench.problem.Problem
 import mgobench.result.Result
 import mgobench.utils.aggregation
 import mgo.evolution._
 import mgo.evolution.algorithm._
-import ranking._
-import breeding._
-import elitism._
-import mgo.contexts._
+import mgo.evolution.ranking._
+import mgo.evolution.breeding._
+import mgo.evolution.elitism._
+
 import cats.data._
 import cats.implicits._
-import freedsl.dsl._
+
 import mgobench.problem.coco.CocoProblem
 
 /**
@@ -52,7 +52,7 @@ case class NSGA3 (
                      * rng
                      */
                    rng: scala.util.Random = new scala.util.Random
-                 ) extends Optimization {
+                 ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = NSGA3.optimize(this,problem)
 

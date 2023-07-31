@@ -1,23 +1,22 @@
-package mgobench.optimize.ga
+package mgobench.optimise.ga
 
 import mgo.evolution.algorithm.GenomeVectorDouble._
 import mgo.evolution._
-import algorithm._
-import ranking._
+import mgo.evolution.algorithm._
+import mgo.evolution.ranking._
 import tools._
 import breeding._
 import elitism._
 //import contexts._
 import cats.data._
 import cats.implicits._
-import freedsl.dsl._
-import freedsl.tool._
-import mgobench.optimize.Optimization
-import mgobench.optimize.ga.NSGA2.{NSGA2Instance, result, run}
+
+import mgobench.optimise.Optimisation
+import mgobench.optimise.ga.NSGA2.{NSGA2Instance, result, run}
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
-import shapeless._
+
 import mgobench.utils._
 
 import scala.language.higherKinds
@@ -43,7 +42,7 @@ case class NoisyNSGA2(
                        embedding: String = "inv-size",
 
                      rng: scala.util.Random = new scala.util.Random
-                     ) extends Optimization {
+                     ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = NoisyNSGA2.optimize(this,problem)
 

@@ -1,4 +1,4 @@
-package mgobench.optimize
+package mgobench.optimise
 
 
 //import dynaml.optimization.mgobench.optimize.GradientDescent
@@ -36,7 +36,7 @@ case class GradientDescent (
                                */
                              x0: (Problem => Array[Double]) = GradientDescent.x0
 
-                           ) extends Optimization {
+                           ) extends Optimisation {
 
   override def optimize(problem: Problem): Result = GradientDescent.optimize(this,problem)
 

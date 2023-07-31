@@ -1,5 +1,5 @@
 
-package mgobench.optimize.pso
+package mgobench.optimise.pso
 
 
 
