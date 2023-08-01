@@ -94,8 +94,8 @@ object Indicators {
 
   /**
     *
-    * @param res
-    * @param historicalResultsFile
+    * @param res results
+    * @param historicalResultsFile file
     * @return
     */
   def computeExpectedIndicators(res: Seq[Result],historicalResultsFile: String = "data/historicalresults.csv"):Array[Array[Any]] = {
@@ -103,7 +103,7 @@ object Indicators {
     res.groupBy(_.id).map {
       case (k,results) =>
         //println("Expected runtimes for "+k+" : " + Indicators.expectedRunTime(Indicators.historicalSolutionSuccess(0.1, hist), results.toVector))
-        Array(k,expectedRunTime(historicalSolutionSuccess(0.1, hist), results.toVector).value,expectedPrecision(historicalSolutionSuccess(0.1, hist), results.toVector).value)
+        Array(k,expectedRunTime(historicalSolutionSuccess(0.1, hist), results.toVector).value,expectedPrecision(historicalSolutionSuccess(0.1, hist), results.toVector).value).map(_.asInstanceOf[Any])
     }.toArray
       //.toList.sorted.mkString("\n")
   }

@@ -34,7 +34,7 @@ case class KalmanNSGA2(
                       rng: scala.util.Random = new scala.util.Random
                       ) extends Optimisation {
 
-  override def optimize(problem: Problem): Result = KalmanNSGA2.optimize(this,problem)
+  override def optimise(problem: Problem): Result = KalmanNSGA2.optimise(this,problem)
 
   override def name: String = "KalmanNSGA2-"+mu+"-"+lambda+"-"+cloneProbability+"-"+observationNoise
 }
@@ -45,7 +45,7 @@ object KalmanNSGA2 {
 
 
 
-  def optimize(kalmanNSGA2: KalmanNSGA2,problem: Problem): mgobench.result.Result = {
+  def optimise(kalmanNSGA2: KalmanNSGA2,problem: Problem): mgobench.result.Result = {
     val prevevals = problem.evaluations
     val instance = KalmanNSGA2Instance(kalmanNSGA2,problem)
 

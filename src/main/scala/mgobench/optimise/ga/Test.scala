@@ -1,13 +1,6 @@
 package mgobench.optimise.ga
 
-import mgo._
-//import mgo.contexts._
-import NSGA2.{NSGA2Instance, Result}
-import mgo.evolution.algorithm.CDGenome.DeterministicIndividual._
-import mgo.evolution.algorithm.CDGenome.Genome
-import mgo.evolution.algorithm.CDGenome.NoisyIndividual.Individual
-import mgo.evolution.algorithm._
-import mgobench.result._
+//import mgobench.result._
 
 import scala.util.Random
 
@@ -15,16 +8,15 @@ import scala.util.Random
 object Test {
 
   object GaussianNoise {
-    def apply(rng: util.Random)(mu: Double = 0.0, sigma: Double = 0.01)= (sigma * rng.nextGaussian()) + mu
+    def apply(rng: util.Random)(mu: Double = 0.0, sigma: Double = 0.01): Double= (sigma * rng.nextGaussian()) + mu
   }
 
-
+/*
   def replication(seed: Int)(fitness: Vector[Double]=>Vector[Double],boundaries:Vector[C]): Vector[mgobench.result.Result] = {
     val rng = new util.Random(seed)
 
-    import NSGA2._
 
-    val nsga2 = NSGA2Instance(
+    val nsga2 = NSGA2Optimisation.NSGA2Instance(
       mu = 100,
       lambda = 20,
       //fitness = x => Vector(Rastrigin.rastrigin(x) + GaussianNoise(rng)(mu = 0.0,sigma = 0.0)),
@@ -34,6 +26,7 @@ object Test {
       fitness = fitness,
       continuous = boundaries
     )
+*/
 
     /*
     val noisyNsga2 = NoisyNSGA2(
@@ -91,7 +84,7 @@ object Test {
 
   */
     Vector.empty
-    }
+    //}
 
 
 }

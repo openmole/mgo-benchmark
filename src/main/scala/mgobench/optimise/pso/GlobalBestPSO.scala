@@ -3,6 +3,8 @@ package mgobench.optimise.pso
 import mgobench.optimise.Optimisation
 import mgobench.problem.Problem
 import mgobench.result.Result
+
+/*
 import eu.timepit.refined.auto.autoRefineV
 import eu.timepit.refined.api.Validate
 import eu.timepit.refined.api.RefType
@@ -21,46 +23,28 @@ import cilib.benchmarks.Benchmarks._
 import mgobench.problem.coco.CocoProblem
 import shapeless.Nat
 import shapeless.Nat._0
-
+*/
 
 /**
   * Already old benchmark of pso and ga : http://sci-hub.tw/https://ieeexplore.ieee.org/abstract/document/1688379
   * Edwards, A., & Engelbrecht, A. P. (2006, July). Comparing particle swarm optimisation and genetic algorithms for nonlinear mapping. In Evolutionary Computation, 2006. CEC 2006. IEEE Congress on (pp. 694-701). IEEE.
   *
-  * @param iterations
-  * @param particles
-  * @param w
-  * @param c1
-  * @param c2
+ *
+  * @param iterations Number of iterations
+  * @param particles Number of particles
+  * @param w Weight of inertia
+  * @param c1 Weight of cognition
+  * @param c2 Weight of social
   */
 case class GlobalBestPSO(
-                          /**
-                            * Number of iterations
-                            */
                    iterations: Int,
-
-                          /**
-                            * Number of particles
-                            */
                    particles: Int,
+                   w: Double = 0.729844,
+                   c1: Double = 1.496180,
+                   c2: Double = 1.496180
+                        ) extends Optimisation {
 
-                          /**
-                            * Weight of inertia
-                            */
-                          w: Double = 0.729844,
-
-                          /**
-                            * Weight of cognition
-                            */
-                        c1: Double = 1.496180,
-
-                          /**
-                            * Weight of social
-                            */
-                          c2: Double = 1.496180
-                   ) extends Optimisation {
-
-  override def optimize(problem: Problem): Result = GlobalBestPSO.optimize(globalBestPSO = this,problem)
+  override def optimise(problem: Problem): Result = GlobalBestPSO.optimise(globalBestPSO = this,problem)
 
   override def name: String = "GBPSO-"+iterations+"-"+particles
 
@@ -77,8 +61,9 @@ object GlobalBestPSO {
     * @param problem
     * @return
     */
-  def optimize(globalBestPSO: GlobalBestPSO, problem: Problem): Result = {
+  def optimise(globalBestPSO: GlobalBestPSO, problem: Problem): Result = {
 
+    /*
     val prevevals = problem.evaluations
 
     val listbounds = problem.lower_bounds.zip(problem.upper_bounds).map{case (l,h)=>Interval(l,h)}.toList
@@ -123,7 +108,10 @@ object GlobalBestPSO {
     val (opt,optindex): (Double,Int) = optValues.zipWithIndex.sortWith{case((d1,_),(d2,_)) => d1 < d2}.head
 
     Result(Vector(optPositions(optindex)),Vector(Vector(opt)),problem.evaluations - prevevals,problem,globalBestPSO)
+    */
+    Result.empty
   }
+
 
 
 }

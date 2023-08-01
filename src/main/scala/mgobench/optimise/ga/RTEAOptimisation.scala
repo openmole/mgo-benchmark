@@ -2,16 +2,13 @@ package mgobench.optimise.ga
 
 
 import cats.data.Kleisli
+
 import mgo.evolution.algorithm.CDGenome._
-import mgo.algorithm._
-import mgo.{C, arrayToVectorLens, contexts}
-import mgo.contexts._
+import mgo.evolution.algorithm._
+
 import mgobench.optimise._
 import mgobench.problem._
 import mgobench.result._
-import monocle.macros.Lenses
-
-import scala.language.higherKinds
 
 
 /**
@@ -28,23 +25,23 @@ import scala.language.higherKinds
   * @param generations
   * @param rng
   */
-case class RTEA(
+case class RTEAOptimisation(
   initPopSize: Int,
   maxPopSize: Int,
   generations: Int,
   rng: scala.util.Random = new scala.util.Random
 ) extends Optimisation {
 
-  override def optimize(problem: Problem): Result = RTEA.optimize(this,problem)
+  override def optimise(problem: Problem): Result = RTEAOptimisation.optimise(this,problem)
 
   override def name: String = "RTEA-"+initPopSize+"-"+maxPopSize
 }
 
 
 
-object RTEA {
+object RTEAOptimisation {
 
-  def optimize(RTEA: RTEA,problem: Problem): Result = Result.empty
+  def optimise(RTEA: RTEAOptimisation,problem: Problem): Result = Result.empty
 
   case class RTEAInstance(
                            initPopSize: Int,
@@ -55,26 +52,36 @@ object RTEA {
 
   object RTEAIndividual {
 
-    @Lenses case class Individual(
+    type Individual = NoisyIndividual.Individual[Vector[Double]]
+    /*
+
+    !! Not needed -> use NoisyIndividual
+    case class Individual(
                                    genome: Genome,
                                    fitnesses: Array[Array[Double]]
                                  )
 
     def vectorFitness = Individual.fitnesses.composeLens(arrayToVectorLens)
-
     def buildIndividual(g: Genome, f: Vector[Double]) = Individual(g, Array(f.toArray))
 
-    def expression(fitness: (Vector[Double], Vector[Int]) => Vector[Double], components: Vector[C],observationNoise: Double): Genome => Individual =
-      deterministic.expression[Genome, Individual](
-        values(_, components),
-        buildIndividual(_,_),
-        fitness)
+     */
+
+    // deterministic expression? to be checked - changed to noisy for correct type
+    // ???
+    def expression(fitness: (Vector[Double], Vector[Int]) => Vector[Double],
+                   components: Vector[C],
+                   observationNoise: Double // not used
+                  ): Genome => Individual =
+      //deterministic.expression[Genome, Individual](values(_, components), buildIndividual(_,_), fitness)
+      noisy.expression[Genome, Individual, Vector[Double]](
+        values(_, continuous),
+        buildIndividual[Vector[Double]])(fitness)
 
   }
 
-  import RTEAIndividual._
 
-  def initialGenomes[M[_]: cats.Monad: Random](lambda: Int, continuous: Vector[C]) = CDGenome.initialGenomes[M](lambda, continuous, Vector.empty)
+  // not needed: use CDGenome.initialGenomes
+  //def initialGenomes(lambda: Int, continuous: Vector[C], rng: scala.util.Random): Vector[Genome] = CDGenome.initialGenomes[M](lambda, continuous, Vector.empty)
 
   /*def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual =
     expression(d => fitness(d), continuous)

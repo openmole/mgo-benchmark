@@ -2,7 +2,7 @@
 package mgobench.optimise.pso
 
 
-
+/*
 import cilib._
 import cilib.pso._
 import cilib.pso.Defaults._
@@ -14,10 +14,12 @@ import scalaz.effect._
 import scalaz.effect.IO.putStrLn
 import spire.implicits._
 import spire.math.Interval
+*/
 
 
 object GBestPSO extends App {
 
+  /*
    val bounds = Interval(-5.12, 5.12) ^ 2
     val env = Environment(Comparison.dominance(Min),Eval.unconstrained(spherical[NonEmptyList, Double]))
     //fitness here
@@ -55,4 +57,6 @@ object GBestPSO extends App {
         p.pos.objective.get.fitness.toEither.left.get.asInstanceOf[Feasible].v}
     println(optValues.min)
 
+
+   */
 }

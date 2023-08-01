@@ -23,11 +23,12 @@ resolvers += Resolver.mavenCentral
 libraryDependencies += "org.openmole" % "mgo_3" % "3.55"
 libraryDependencies += "org.scalanlp" % "breeze_3" % "2.1.0"
 //libraryDependencies += ("org" % "akka-multiswarm_2.12" % "0.1-SNAPSHOT").exclude("org.scalanlp", "breeze_2.12") // locally published lib
-libraryDependencies += "net.cilib" % "cilib-core_2.12" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" % "cilib-exec_2.12" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" % "cilib-ga_2.12" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" % "cilib-pso_2.12" % "2.0.1-30-g5ca4090"
-libraryDependencies += "net.cilib" % "benchmarks_2.12" % "0.1.1"
+// ! not compatible with scala3
+//libraryDependencies += "net.cilib" % "cilib-core_2.12" % "2.0.1-30-g5ca4090"
+//libraryDependencies += "net.cilib" % "cilib-exec_2.12" % "2.0.1-30-g5ca4090"
+//libraryDependencies += "net.cilib" % "cilib-ga_2.12" % "2.0.1-30-g5ca4090"
+//libraryDependencies += "net.cilib" % "cilib-pso_2.12" % "2.0.1-30-g5ca4090"
+//libraryDependencies += "net.cilib" % "benchmarks_2.12" % "0.1.1"
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1"
 

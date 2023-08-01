@@ -10,8 +10,8 @@ package object ga {
   /**
     * Combine two rankings to be used in a lexical order in a tournament
     *
-    * @param ranking1
-    * @param ranking2
+    * @param ranking1 first ranking
+    * @param ranking2 second ranking
     * @tparam M
     * @tparam I
     * @return
@@ -23,9 +23,11 @@ package object ga {
         r2 <- ranking2(population)
       } yield r1 zip r2)
 
-  def acceptableRanking[M[_]: cats.Monad, I](fitness: I => Vector[Double],acceptableFitness: Vector[Double]): Kleisli[M,Vector[I],Vector[Lazy[Int]]] = {
-    def acceptableComps = (i: I) => fitness(i).zip(acceptableFitness).map{case(f,fa)=>if(f<fa)0.0 else 1.0}
-    paretoRanking[I](acceptableComps)
+  
+  def acceptableRanking[M[_]: cats.Monad, I](fitness: I => Vector[Double],acceptableFitness: Vector[Double])
+     : Kleisli[M,Vector[I],Vector[Later[Int]]] = {
+        def acceptableComps = (i: I) => fitness(i).zip(acceptableFitness).map{case(f,fa)=>if(f<fa)0.0 else 1.0}
+        paretoRanking[I](acceptableComps)
   }
 
 

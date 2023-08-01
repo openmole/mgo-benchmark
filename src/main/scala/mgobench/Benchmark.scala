@@ -12,19 +12,19 @@ object Benchmark {
 
   /**
     * Benchmarks a set of optimizers on a set of problems
-    * @param optimizers
-    * @param problems
+    * @param optimizers optimizers
+    * @param problems problems
     * @return
     */
   def benchmark(optimizers: Seq[Optimisation], problems: Seq[Problem]): Seq[Seq[Result]] = {
-    optimizers.map{o => problems.map{o.optimize}}
+    optimizers.map{o => problems.map{o.optimise}}
   }
 
   /**
     * Benchmarks a set of optimizers on a suite (integrated set of problems)
     *
-    * @param optimizers
-    * @param suite
+    * @param optimizers optimizers
+    * @param suite problem suite
     * @return Everything flatten (problem and optimizer stored in Result)
     */
   def benchmark(optimizers: Seq[Optimisation], nBootstraps: Int, suite: Suite, problemsNumber: Int = 1, problemFilter: Problem=>Boolean = { _=>true}): Seq[Result] = {
@@ -34,9 +34,9 @@ object Benchmark {
     var k = 0
     while(!currentProblem.isEmpty&&k<problemsNumber){
       if(problemFilter(currentProblem)) {
-        (0 until nBootstraps).foreach { case i =>
+        (0 until nBootstraps).foreach { i =>
           println("Solving problem " + currentProblem.toString + " with " + optimizers.size + " optimizers (" + optimizers.mkString(";") + " repet " + i)
-          optimizers.foreach { case o => res.append(o.optimize(currentProblem)) }
+          optimizers.foreach { o => res.append(o.optimize(currentProblem)) }
         }
         k=k+1
       }

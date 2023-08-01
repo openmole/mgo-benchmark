@@ -103,7 +103,7 @@ object CocoSuite {
       //println("Best solution : "+mgobench.optimize.RandomSearch.optimize(problem)(10000))
       //println("Fvalinterest : "+mgobench.problem.Problem.getLargestFValuesOfInterest(problem))
 
-      println("Best solution : "+optimizer.optimize(problem))
+      println("Best solution : "+optimizer.optimise(problem))
 
       problem = getNextProblem(suite)
     }

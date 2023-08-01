@@ -1,24 +1,36 @@
 
 package mgobench.optimise.pso
 
-import cilib.exec.Runner
-import cilib.pso.Defaults
-import cilib.pso.{Guide, PSO, Particle}
-import cilib.{Comparison, Entity, Environment, Eval, Feasible, Iteration, Mem, Min, Position, RNG, Step, StepS}
-import eu.timepit.refined.api.Refined
+//import cilib.exec.Runner
+//import cilib.pso.Defaults
+//import cilib.pso.{Guide, PSO, Particle}
+//import cilib.{Comparison, Entity, Environment, Eval, Feasible, Iteration, Mem, Min, Position, RNG, Step, StepS}
+//import eu.timepit.refined.api.Refined
+
 import mgobench.optimise.Optimisation
 import mgobench.problem.Problem
 import mgobench.result.Result
-import scalaz.effect.IO
-import scalaz.effect.IO.putStrLn
-import scalaz.{IList, Kleisli, NonEmptyList}
-import spire.math.Interval
-import spire.algebra.{Order, Rng}
+
+
+//import scalaz.effect.IO
+//import scalaz.effect.IO.putStrLn
+//import scalaz.{IList, Kleisli, NonEmptyList}
+//import spire.math.Interval
+//import spire.algebra.{Order, Rng}
 //import spire.std.any.DoubleAlgebra.
 
 import scala.util.Random
 
 
+/**
+ *  !!! cilib not compatible with scala3
+ * @param iterations
+ * @param particles
+ * @param w
+ * @param c1
+ * @param c2
+ * @param rng
+ */
 case class GCPSO(
                   /**
                     * Number of iterations
@@ -41,7 +53,7 @@ case class GCPSO(
 
                 ) extends Optimisation {
 
-  override def optimize(problem: Problem): Result = GCPSO.optimize(gcpso = this,problem)
+  override def optimise(problem: Problem): Result = GCPSO.optimise(gcpso = this,problem)
 
   override def name: String = "GCPSO-"+iterations+"-"+particles+"-"+w+"-"+c1+"_"+c2
 
@@ -52,8 +64,9 @@ case class GCPSO(
 
 object GCPSO {
 
-  def optimize(gcpso: GCPSO,problem: Problem): Result = {
+  def optimise(gcpso: GCPSO,problem: Problem): Result = {
 
+    /*
     val prevevals = problem.evaluations
 
     val listbounds = problem.lower_bounds.zip(problem.upper_bounds).map{case (l,h)=>Interval(l,h)(Order.from{case d=> (d._1-d._2).ceil.toInt})}.toList
@@ -105,6 +118,9 @@ object GCPSO {
     val (opt,optindex): (Double,Int) = optValues.zipWithIndex.sortWith{case((d1,_),(d2,_)) => d1 < d2}.head
 
     Result(Vector(optPositions(optindex)),Vector(Vector(opt)),problem.evaluations - prevevals,problem,gcpso)
+    */
+    Result.empty
   }
+
 
 }
