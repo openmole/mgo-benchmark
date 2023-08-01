@@ -11,7 +11,7 @@ import cats.implicits._
 
 import mgo.evolution.algorithm.GenomeVectorDouble._
 import mgo.evolution.breeding._
-import mgo.dominance.nonStrictDominance
+import mgo.evolution.dominance.nonStrictDominance
 import monocle.macros._
 
 import mgobench.utils.implicits._
@@ -23,7 +23,7 @@ object KalmanNSGA2Operations {
     */
   object KalmanIndividual {
 
-    @Lenses case class Individual(
+     case class Individual(
                                    genome: Genome,
                                    fitness: Array[Double],
                                    uncertainty: Array[Double],

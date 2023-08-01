@@ -24,6 +24,9 @@ import scala.util.Random
 
 /**
  *  !!! cilib not compatible with scala3
+ *
+ *   java implementation of particle swarm: https://gitlab.com/particle-swarm/PSO-Java/-/blob/master/PSO.java?ref_type=heads
+ *
  * @param iterations
  * @param particles
  * @param w

@@ -2,13 +2,14 @@ package mgobench.optimise.ga
 
 
 import cats.data.Kleisli
-
-import mgo.evolution.algorithm.CDGenome._
-import mgo.evolution.algorithm._
-
-import mgobench.optimise._
-import mgobench.problem._
-import mgobench.result._
+import mgo.evolution.*
+import mgo.evolution.algorithm.*
+import mgo.evolution.algorithm.CDGenome.*
+import mgo.evolution.algorithm.CDGenome.NoisyIndividual.*
+import mgo.tools.execution.*
+import mgobench.optimise.*
+import mgobench.problem.*
+import mgobench.result.*
 
 
 /**
@@ -86,32 +87,29 @@ object RTEAOptimisation {
   /*def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): (util.Random, Genome) => Individual =
     expression(d => fitness(d), continuous)
 */
-  def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): Genome => Individual =
-    expression(d => fitness(d), continuous)
+  def expression(fitness: Vector[Double] => Vector[Double], continuous: Vector[C]): Genome => RTEAIndividual.Individual =
+    RTEAIndividual.expression(d => fitness(d._1), continuous, 0.0)
 
 
-  def step[M[_]: cats.Monad: Random,Individual,Genome](size: Int): Kleisli[M,Vector[Individual],Vector[Individual]] = /*Kleisli[M,Vector[Individual],Vector[Individual]] {
-    population =>
-      population.pure[M]
-  }*/
-    mgo.elitism.randomO(size)
+
+// TBD
+//  def step(size: Int): (S, Vector[I]) //Kleisli[M,Vector[Individual],Vector[Individual]] = // Kleisli[M,Vector[Individual],Vector[Individual]] {
+//    population =>
+//      population.pure[M]
+//  }
+//    mgo.evolution.elitism.randomO(size)
 
 
-  def state[M[_]: cats.Monad: StartTime: Random: Generation] = mgo.algorithm.state[M, Unit](())
 
-  def run[T](rng: util.Random)(f: contexts.run.Implicits => T): T = contexts.run(rng)(f)
-  def run[T](state: EvolutionState[Unit])(f: contexts.run.Implicits => T): T = contexts.run(state)(f)
-
-
-  implicit def isAlgorithm[M[_]: Generation: Random: cats.Monad: StartTime]: Algorithm[RTEAInstance, M, Individual, Genome, EvolutionState[Unit]] =
-    new Algorithm[RTEAInstance, M, Individual, Genome, EvolutionState[Unit]] {
-      override def initialPopulation(t: RTEAInstance) =
-        deterministic.initialPopulation[M, Genome, Individual](
-          initialGenomes[M](t.initPopSize, t.continuous),
+  implicit def isAlgorithm: Algorithm[RTEAInstance, RTEAIndividual.Individual, Genome, EvolutionState[Unit]] =
+    new Algorithm[RTEAInstance, RTEAIndividual.Individual, Genome, EvolutionState[Unit]] {
+      override def initialState(t: RTEAInstance, rng: scala.util.Random) = EvolutionState(s = ())
+      override def initialPopulation(t: RTEAInstance, rng: scala.util.Random) =
+        deterministic.initialPopulation[Genome, RTEAIndividual.Individual](
+          CDGenome.initialGenomes(t.initPopSize, t.continuous, Vector.empty, None, rng),
           expression(t.fitness, t.continuous))
-      override def step(t: RTEAInstance) =
-        RTEA.step[M, Individual, Genome](t.initPopSize)
-      override def state = RTEA.state[M]
+      override def step(t: RTEAInstance) = {case (s, population, rng): (EvolutionState[Unit], Vector[RTEAIndividual.Individual], scala.util.Random) => (s, population) }
+       // RTEA.step[EvolutionState[Unit], RTEAIndividual.Individual, Genome](t.initPopSize)
     }
 
 

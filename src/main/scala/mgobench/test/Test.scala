@@ -3,7 +3,6 @@ package mgobench.test
 import mgo.evolution.C
 import mgobench.{Benchmark, optimise}
 import mgobench.optimise.GradientDescent
-import mgobench.optimise.ga.NSGA3Operations._
 import mgobench.optimise.ga._
 import mgobench.optimise.pso.GCPSO
 import mgobench.problem.FitnessSuite
@@ -147,7 +146,7 @@ package object test {
     val sigma = 2.0
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        mgobench.optimise.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
+        mgobench.optimise.ga.NoisyNSGA2Optimisation(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
       ),
       nBootstraps = 1,
       suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),
