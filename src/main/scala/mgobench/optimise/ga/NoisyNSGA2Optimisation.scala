@@ -5,15 +5,6 @@ import mgo.evolution.*
 import mgo.evolution.algorithm.*
 import mgo.evolution.ranking.*
 
-import tools.*
-import breeding.*
-import elitism.*
-import mgo.evolution.algorithm.NoisyNSGA2.NSGA2State
-import mgo.tools.execution.Algorithm
-//import contexts._
-import cats.data._
-import cats.implicits._
-
 import mgobench.optimise.Optimisation
 import mgobench.optimise.ga.NSGA2.{NSGA2Instance, result, run}
 import mgobench.problem.Problem
@@ -21,8 +12,6 @@ import mgobench.problem.coco.CocoProblem
 import mgobench.result.Result
 
 import mgobench.utils._
-
-import scala.language.higherKinds
 
 
 /**

@@ -2,19 +2,13 @@
 package mgobench.optimise.ga
 
 
-import mgo._
-import evolution._
-import ranking._
-import tools._
-import breeding._
-import elitism._
-//import contexts._
-import cats.data._
-import cats.implicits._
-
-import mgo.evolution.algorithm.CDGenome._
+import mgo.*
+import mgo.evolution.*
+import mgo.evolution.algorithm.CDGenome.*
+import mgo.evolution.algorithm.GenomeVectorDouble
+import mgo.evolution.elitism.{Elitism, keepHighestRanked}
+import mgo.evolution.ranking.paretoRankingMinAndCrowdingDiversity
 import mgobench.optimise.Optimisation
-import mgobench.optimise.ga.KalmanNSGA2Operations.KalmanIndividual
 import mgobench.optimise.ga.NSGA2.{NSGA2Instance, result, run}
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
@@ -22,10 +16,9 @@ import mgobench.result.Result
 //import monocle.macros.Lenses
 import monocle.macros.GenLens
 
-import scala.language.higherKinds
 
 
-case class KalmanNSGA2(
+case class KalmanNSGA2Optimisation(
                       lambda: Int,
                       mu: Int,
                       generations: Int,
@@ -34,18 +27,18 @@ case class KalmanNSGA2(
                       rng: scala.util.Random = new scala.util.Random
                       ) extends Optimisation {
 
-  override def optimise(problem: Problem): Result = KalmanNSGA2.optimise(this,problem)
+  override def optimise(problem: Problem): Result = KalmanNSGA2Optimisation.optimise(this,problem)
 
   override def name: String = "KalmanNSGA2-"+mu+"-"+lambda+"-"+cloneProbability+"-"+observationNoise
 }
 
 
 
-object KalmanNSGA2 {
+object KalmanNSGA2Optimisation {
 
 
 
-  def optimise(kalmanNSGA2: KalmanNSGA2,problem: Problem): mgobench.result.Result = {
+  def optimise(kalmanNSGA2: KalmanNSGA2Optimisation,problem: Problem): mgobench.result.Result = {
     val prevevals = problem.evaluations
     val instance = KalmanNSGA2Instance(kalmanNSGA2,problem)
 
@@ -140,18 +133,115 @@ object KalmanNSGA2 {
       cloneProbability
     )
 
+
+    /**
+     * Breeding : includes clone probability
+     */
+    def breeding[M[_] : cats.Monad : Generation : Random, I, G](
+                                                                 fitness: I => Vector[Double],
+                                                                 uncertainty: I => Vector[Double],
+                                                                 genome: I => G,
+                                                                 genomeValues: G => Vector[Double],
+                                                                 buildGenome: Vector[Double] => G,
+                                                                 crossover: GACrossover[M],
+                                                                 mutation: GAMutation[M],
+                                                                 lambda: Int,
+                                                                 cloneProbability: Double
+                                                               ): Breeding[M, I, G] = Breeding { population =>
+
+      def fitness: Individual
+
+      // implicit must be imported at this level
+      import mgobench.utils.implicits._
+      for {
+        ranks <- paretoRankingMinAndCrowdingDiversity[M, I](i => fitness(i) + uncertainty(i)) apply population
+        breeding = applyOperators[M, I, Vector[Double]](crossover, mutation, tournament[M, I, (Lazy[Int], Lazy[Double])](ranks), genome andThen genomeValues) apply population
+        offspring <- breeding repeat ((lambda + 1) / 2)
+        offspringGenomes = offspring.flatMap {
+          case (o1, o2) =>
+            def gv1 = o1.map(tools.clamp(_))
+
+            def gv2 = o2.map(tools.clamp(_))
+
+            Vector(buildGenome(gv1), buildGenome(gv2))
+        }
+        sizedOffspringGenomes <- randomTake[M, G](offspringGenomes, lambda)
+
+        // the selection for cloning is done here with an uncertainty-based tournament
+        acceptableFitnesses: Vector[Double] = population.map(fitness).zip(population.map(uncertainty)).map { case (f, u) => (f + u).sum / f.size }
+        ranksPrioritary <- lexicoRanking[M, I](acceptableRanking[M, I](fitness, acceptableFitnesses), paretoRanking[M, I](i => uncertainty(i).map {
+          1 / _
+        })) apply population
+        gs <- clonesReplace[M, I, G](cloneProbability, population, genome, tournament[M, I, (Lazy[Int], Lazy[Int])](ranksPrioritary)) apply sizedOffspringGenomes
+      } yield gs
+    }
+
+
   def expression(fitness: Vector[Double] => Vector[Double], components: Vector[C],observationNoise: Double): Genome => Individual =
     KalmanIndividual.expression((v, d) => fitness(v), components,observationNoise)
 
-  def elitism[M[_]: cats.Monad: Random: Generation](mu: Int, observationNoise: Double, components: Vector[C]): Elitism[M, Individual] =
-    KalmanNSGA2Operations.elitism[M, Individual](
-      vectorFitness,
-      i => values(Individual.genome.get(i), components),
-      mu,
-      vectorUncertainty,
-      Individual.evaluations,
-      observationNoise
-    )
+
+  /**
+   *
+   * Specific clone strategy : this is where Kalman heuristic is included for updating uncertainty and fitness
+   *
+   * @param fitness     lens to access fitness vector for individuals
+   * @param uncertainty lens to access uncertainty for individuals
+   * @return
+   */
+  def updateUncertainty(
+                        fitness: monocle.Lens[I, Vector[Double]],
+                        uncertainty: monocle.Lens[I, Vector[Double]],
+                        evaluations: monocle.Lens[I, Int]
+                       )(
+                        observationNoise: Double
+                        ): UncloneStrategy[M, I] =
+    (clones: Vector[I]) =>
+      clones.reduce { (i1, i2) =>
+        val f1: Vector[Double] = fitness.get(i1)
+        val f2: Vector[Double] = fitness.get(i2)
+        val u1: Vector[Double] = uncertainty.get(i1)
+        val u2: Vector[Double] = uncertainty.get(i2)
+        val n1: Int = evaluations.get(i1)
+        val n2: Int = evaluations.get(i2)
+
+        def updateObservationNoise(v1: Double, v2: Double): Double = v1 * v2 / (v1 + v2)
+
+        def updateObservationFitness(g1: Double, g2: Double, v1: Double, v2: Double): Double =
+          (v1, v2) match {
+            case (v1, v2) if v1 < v2 => g1 + v1 * (g2 - g1) / (v1 + v2)
+            case (v1, v2) if v1 > v2 => g2 + v2 * (g1 - g2) / (v1 + v2)
+            case (v1, v2) if v1 == v2 => (g1 + g2) / 2
+          }
+
+        val u: Vector[Double] = u1.zip(u2).map { case (d1, d2) => updateObservationNoise(d1, d2) }
+        val f: Vector[Double] = f1.zip(f2).zip(u1).zip(u2).map { case (((g1, g2), v1), v2) => updateObservationFitness(g1, g2, v1, v2) }
+
+        fitness.set(f)(uncertainty.set(u)(evaluations.set(n1 + n2)(i1)))
+      }.pure[M]
+
+
+  /**
+   * Elitism: use the specific cloning strategy
+   */
+  def elitism(
+               mu: Int,
+               observationNoise: Double,
+               components: Vector[C]
+             ): Elitism[EvolutionState[Unit], KalmanIndividual.Individual] = {
+    def fitness: KalmanIndividual.Individual => Vector[Double] = {i => i.fitness}
+    def uncertainty: KalmanIndividual.Individual => Vector[Double] = {i => i.uncertainty}
+    def evaluations: KalmanIndividual.Individual => Int = {i => i.evaluations}
+    def values: KalmanIndividual.Individual => (Vector[Double],Vector[Int]) = {i => CDGenome.values(i.focus(_.genome).get, components)}
+    (s, population, candidates, rng)  =>
+    for {
+      cloneRemoved <- applyCloneStrategy(values, updateUncertainty(fitness, uncertainty, evaluations)(observationNoise)) apply GenomeVectorDouble.filterNaN(population, fitness.get)
+      ranks <- paretoRankingMinAndCrowdingDiversity[M, I](fitness.get) apply cloneRemoved
+      elite = keepHighestRanked(cloneRemoved, ranks, mu)
+    } yield elite
+  }
+
+
 
   case class Result(continuous: Vector[Double], discrete: Vector[Int], fitness: Vector[Double],uncertainty: Vector[Double],evaluations: Int)
 
@@ -163,7 +253,7 @@ object KalmanNSGA2 {
     //println(population.map {case i => i.fitness(0)+i.uncertainty(0)})
 
     keepFirstFront(
-      population.map { case i => Individual(i.genome, i.fitness.zip(i.uncertainty).map { case (f, u) => f + u }, i.uncertainty, i.evaluations) },
+      population.map { i => Individual(i.genome, i.fitness.zip(i.uncertainty).map { case (f, u) => f + u }, i.uncertainty, i.evaluations) },
       vectorFitness.get).map { i =>
       Result(scaleContinuousValues(continuousValues.get(i.genome), continuous),
         Individual.genome composeLens discreteValues get i,
@@ -202,6 +292,39 @@ object KalmanNSGA2 {
           KalmanNSGA2.elitism(t.mu,t.observationNoise, t.continuous))
       override def state = KalmanNSGA2.state[M]
     }
+
+  /**
+   * A specific KalmanIndividual including uncertainty of the solution
+   */
+  object KalmanIndividual {
+
+    case class Individual(
+                           genome: Genome,
+                           fitness: Vector[Double],
+                           uncertainty: Vector[Double],
+                           evaluations: Int
+                         )
+
+
+    def individualFitness: Individual => Vector[Double] = Focus[Individual](_.fitness)
+
+    def individualUncertainty: Individual => Vector[Double] = Focus[Individual](_.uncertainty)
+
+    def buildIndividual(g: Genome, f: Vector[Double], observationNoise: Double): Individual =
+      Individual(g, f, Vector.fill(f.size)(observationNoise), 1)
+
+    def expression(
+                    fitness: (Vector[Double], Vector[Int]) => Vector[Double],
+                    components: Vector[C],
+                    observationNoise: Double
+                  ): Genome => Individual =
+      deterministic.expression[Genome, Vector[Double], Individual](
+        values(_, components),
+        buildIndividual(_, _, observationNoise),
+        fitness
+      )
+  }
+
 
 
 

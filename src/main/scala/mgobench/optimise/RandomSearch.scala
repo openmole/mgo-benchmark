@@ -3,6 +3,8 @@ package mgobench.optimise
 
 import mgo._
 import mgo.evolution.C
+import mgo.evolution.algorithm.CDGenome.DeterministicIndividual.*
+
 import mgobench.utils.Benchmark
 import mgobench.problem.Problem
 import mgobench.problem.coco.CocoProblem
@@ -31,7 +33,7 @@ case class RandomSearch (
     * @param problem the problem to solve
     * @return
     */
-  override def optimize(problem: Problem): Result = {
+  override def optimise(problem: Problem): Result = {
     /*val res = new ArrayBuffer[Result]
     (1 to (nsearchs / resultStep) by 1).foreach { _ =>
       val prevevals = problem.evaluations
@@ -47,7 +49,7 @@ case class RandomSearch (
     */
 
     val prevevals = problem.evaluations
-    val rawres: Vector[(Vector[Double], Vector[Double])] = RandomSearch.optimize(problem)(nsearchs)(nrepets)
+    val rawres: Vector[(Vector[Double], Vector[Double])] = RandomSearch.optimise(problem)(nsearchs)(nrepets)
     Result(rawres.map {_._1}, rawres.map {_._2}, problem.evaluations - prevevals, problem.asInstanceOf[CocoProblem], this)
   }
 
@@ -71,11 +73,11 @@ object RandomSearch {
     * @param rng random number generator
     * @return
     */
-  def optimize(fitness : Vector[Double] => Vector[Double])(genome : Vector[C])(nsearchs: Int)(nrepets: Int)(rng : Random) : Vector[(Vector[Double],Vector[Double])] = {
+  def optimise(fitness : Vector[Double] => Vector[Double])(genome : Vector[C])(nsearchs: Int)(nrepets: Int)(rng : Random) : Vector[(Vector[Double],Vector[Double])] = {
     val points = Vector.fill(nsearchs)(genome.map {c => (c.high - c.low)*rng.nextDouble() +  c.low})
     val fitnessValues = points.map{x => (1 to nrepets by 1).map{_ => fitness(x)}.reduce{ebesum}.map{_/nrepets}}
-    val front = Benchmark.paretoFront(points,fitnessValues)
-    front.map{i => (i.genome.continuousValues.to[Vector],i.fitness.to[Vector])}
+    val front: Vector[Individual[Vector[Double]]] = Benchmark.paretoFront(points,fitnessValues)
+    front.map{i => (i.genome.continuousValues.to[Vector[Double]],i.phenotype.to[Vector[Double]])}
   }
 
   /**
@@ -84,8 +86,8 @@ object RandomSearch {
     * @param nsearchs
     * @return
     */
-  def optimize(problem: Problem)(nsearchs: Int)(nrepets: Int): Vector[(Vector[Double],Vector[Double])]  = {
-    optimize(problem.evaluateFunction(_))(problem.boundaries)(nsearchs)(nrepets)(new util.Random)
+  def optimise(problem: Problem)(nsearchs: Int)(nrepets: Int): Vector[(Vector[Double],Vector[Double])]  = {
+    optimise(problem.evaluateFunction)(problem.boundaries)(nsearchs)(nrepets)(new util.Random)
   }
 
 

@@ -64,9 +64,9 @@ object Launcher extends App {
   val rs = RandomSearch(budget / nrepets,nrepets,seed)
   val gd = GradientDescent(budget / nrepets,nrepets)
   val ngd = NoisyGradientDescent(iterations=budget/(gradientnsearchs*nrepets),stochastic_iterations=nrepets,nsearchs=gradientnsearchs,tolerance=1e-20)
-  val nsga2 = NSGA2(lambda = lambda,mu = mu,nrepets = nrepets,generations = (budget / (nrepets * lambda)) - 1)
-  val kalmannsga2 = KalmanNSGA2(lambda = lambda, mu = mu, generations = (budget/lambda)-1, cloneProbability = kalmanCloneProba,observationNoise = kalmanObservationNoise)
-  val noisynsga2 = NoisyNSGA2(lambda = lambda,mu = mu,generations = (budget / lambda),historySize = noisyNsga2historySize,cloneProbability = noisyNsga2cloneProba,embedding="inv-size")
+  val nsga2 = NSGA2Optimisation(lambda = lambda,mu = mu,nrepets = nrepets,generations = (budget / (nrepets * lambda)) - 1)
+  val kalmannsga2 = KalmanNSGA2Optimisation(lambda = lambda, mu = mu, generations = (budget/lambda)-1, cloneProbability = kalmanCloneProba,observationNoise = kalmanObservationNoise)
+  val noisynsga2 = NoisyNSGA2Optimisation(lambda = lambda,mu = mu,generations = (budget / lambda),historySize = noisyNsga2historySize,cloneProbability = noisyNsga2cloneProba,embedding="inv-size")
   val pso = GlobalBestPSO(iterations = budget / particles,particles = particles)
 
   val optimizers: Seq[Optimisation] = optimName match {

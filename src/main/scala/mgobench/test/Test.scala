@@ -2,8 +2,8 @@ package mgobench.test
 
 import mgo.evolution.C
 import mgobench.{Benchmark, optimise}
-import mgobench.optimise.GradientDescent
-import mgobench.optimise.ga._
+import mgobench.optimise.{GradientDescent, Optimisation}
+import mgobench.optimise.ga.*
 import mgobench.optimise.pso.GCPSO
 import mgobench.problem.FitnessSuite
 import mgobench.problem.coco.{CocoProblem, CocoSolutions, CocoSuite, NoisyCocoSuite}
@@ -37,9 +37,9 @@ package object test {
         mgobench.optimise.RandomSearch(iterations / nrepets,nrepets,1),
         mgobench.optimise.GradientDescent(iterations / nrepets, nrepets),
         mgobench.optimise.NoisyGradientDescent(iterations=iterations/(100*nrepets),stochastic_iterations=nrepets,nsearchs=100,tolerance=1e-20),
-        mgobench.optimise.ga.NSGA2(lambda = 100, mu = 20,nrepets = 1,generations = (iterations/100) - 1),
+        mgobench.optimise.ga.NSGA2Optimisation(lambda = 100, mu = 20,nrepets = 1,generations = (iterations/100) - 1),
         mgobench.optimise.ga.KalmanNSGA2(lambda = 100, mu = 20, generations = (iterations/100)-1, cloneProbability = 0.5,observationNoise = 1.0),
-        mgobench.optimise.ga.NoisyNSGA2(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2),
+        mgobench.optimise.ga.NoisyNSGA2Optimisation(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2),
         mgobench.optimise.pso.GlobalBestPSO(iterations = iterations / 100,particles = 100)
       ),
       nBootstraps = 1,
@@ -66,7 +66,7 @@ package object test {
 
     val iterations = 10000
     val res = Benchmark.benchmark(Seq(
-      mgobench.optimise.ga.NSGA3(
+      mgobench.optimise.ga.NSGA3Optimisation(
         popSize = 100,
         generations = iterations,
         referencePoints = AutoReferences(90))
@@ -92,7 +92,7 @@ package object test {
       dim <- 2 to 10 by 1
       p <- 1 to 5 by 1
       expectedNumber = CombinatoricsUtils.binomialCoefficient(dim + p - 1,p)
-      points: Vector[Vector[Double]] = NSGA3Operations.simplexRefPoints(p,dim)
+      points: Vector[Vector[Double]] = NSGA3Optimisation.simplexRefPoints(p,dim)
     } yield {
       (dim,p)->(expectedNumber,points.size,points)
       //(dim,p)->(expectedNumber,points.size)
@@ -146,7 +146,7 @@ package object test {
     val sigma = 2.0
     val res: Seq[Result] = Benchmark.benchmark(
       optimizers = Seq(
-        mgobench.optimise.ga.NoisyNSGA2Optimisation(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2)
+        mgobench.optimise.ga.NoisyNSGA2Optimisation(lambda=100, mu = 20,generations = (iterations/100)-1,historySize = 100,cloneProbability = 0.2).asInstanceOf[Optimisation]
       ),
       nBootstraps = 1,
       suite = NoisyCocoSuite("bbob",GaussianNoise1D(0,sigma,1)),

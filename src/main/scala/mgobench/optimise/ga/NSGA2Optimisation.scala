@@ -44,7 +44,7 @@ object NSGA2Optimisation {
       instance.algo.until(afterGeneration(nsga2.generations))
       //trace { (s, is) =>if(s.generation%1000==0) {println(s.generation)}}
     val (finalState,finalPopulation): (EvolutionState[Unit], Vector[CDGenome.DeterministicIndividual.Individual[Vector[Double]]]) = evolution.eval(nsga2.rng)
-    val res : Vector[NSGA2.Result[Vector[Double]]] = result(finalPopulation,instance.continuous)
+    val res : Vector[NSGA2.Result[Vector[Double]]] = NSGA2.result(finalPopulation,instance.continuous)
     val orderedRes = res.sortWith{case (r1,r2) => r1.fitness(0) < r2.fitness(0) } // put best result in first for 1D - !!! 1D only
     mgobench.result.Result(
       points = orderedRes.take(1).map{_.continuous},
